@@ -27,6 +27,23 @@ Required steps:
 Creating the file lists
 -----------------------
 
+The CPF extraction is performed  on files discovered in the file lists. The files typically look like:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <list xmlns="http://socialarchive.iath.virginia.edu/"
+          xmlns:snac="http://socialarchive.iath.virginia.edu/"
+          sourceCode="aao"
+          fileCount="1608"
+          pStart="1"
+          pEnd="4">
+     <!--  Number of groups: 4 Group size: 500  -->
+       <group n="1">
+          <i n="1">findingAids/aao/ccp_center_for_creative_photography/CCPAG4.xml</i>
+          <i n="2">findingAids/aao/ccp_center_for_creative_photography/CCPAG38.xml</i>
+          <i n="3">findingAids/aao/ccp_center_for_creative_photography/CCPAG225.xml</i>
+          <i n="4">findingAids/aao/ccp_center_for_creative_photography/CCPAG200.xml</i>
+
+
     cd createFileLists
     ./run_all.pl > rax.log 2>&1 &
 
