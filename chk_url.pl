@@ -1,6 +1,19 @@
 #!/usr/bin/perl -n
 
-use Time::HiRes qw(usleep nanosleep);
+# Author: Tom Laudeman, Daniel Pitti
+# The Institute for Advanced Technology in the Humanities
+
+# Copyright 2013 University of Virginia. Licensed under the Educational Community License, Version 2.0
+# (the "License"); you may not use this file except in compliance with the License. You may obtain a
+# copy of the License at
+
+# http://www.osedu.org/licenses/ECL-2.0
+# http://opensource.org/licenses/ECL-2.0
+
+# Unless required by applicable law or agreed to in writing, software distributed under the License is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions and limitations under the
+# License.
 
 # cat tmp_urls.xml | chk_url.pl > tmp.txt 2>&1 &
 
@@ -8,6 +21,8 @@ use Time::HiRes qw(usleep nanosleep);
 
 # cd ./temp_chk
 # cat ../url_xml/*.xml | perl -n -e 'if (rand() < .01) { print "$_";}' | ../chk_url.pl > tmp.txt 2>&1 &
+
+use Time::HiRes qw(usleep nanosleep);
 
 my $url = "";
 

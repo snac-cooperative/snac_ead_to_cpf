@@ -9,6 +9,23 @@
                 version="2.0">
     
     <!--
+        Author: Tom Laudeman, Daniel Pitti
+        The Institute for Advanced Technology in the Humanities
+        
+        Copyright 2013 University of Virginia. Licensed under the Educational Community License, Version 2.0
+        (the "License"); you may not use this file except in compliance with the License. You may obtain a
+        copy of the License at
+        
+        http://www.osedu.org/licenses/ECL-2.0
+        http://opensource.org/licenses/ECL-2.0
+        
+        Unless required by applicable law or agreed to in writing, software distributed under the License is
+        distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+        implied. See the License for the specific language governing permissions and limitations under the
+        License.
+        
+        Create a file of geoname places and normative place names for quick lookup by other XSL code.
+        
         Read a places xml file, call Robbie's geonames code, output a file of geonames places. Geoname parsing
         is very, very slow, and we do it every time the CPF extraction is run. So, we need to pre-parse the
         geonames and then just look up the values during the CPF extraction.
