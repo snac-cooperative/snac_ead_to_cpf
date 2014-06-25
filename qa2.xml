@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list xmlns="http://socialarchive.iath.virginia.edu/"
+      sourceCode="oac"
+      fileCount="10"
+      pStart="1"
+      pEnd="1"
+      force="1">
+ <!--  Number of groups: 1 Group size: 500  -->
+ <group n="1">
+
+     <!--
+         No bioghist, should be no biogHist in CPF. In the old days, relevantBioghist did a for-each on
+         $otherData/eac:bioghist and then descriptionOriginationEntity did a for-each on
+         $relevantBioghist/bioghist and generated a biogHist regardless.
+
+         Now there's a test in relevantBioghist.
+     -->
+     <i n="174">findingAids/aps/Mss.B.B121-ead.xml</i>
+
+
+     <!-- exercise geog2 and geog3, also unittitle and unitdate in citation -->
+     <i n="165">findingAids/cjh/ajhs-ead-snac/109153_RobisonFamily.xml</i>
+     <i n="166">findingAids/lc/ms997010.xml</i>
+     <i n="167">findingAids/harvard/sch00098.xml</i>
+     <i n="168">findingAids/harvard/sch01256.xml</i>
+
+     <!-- Must copy both date and dateRange for dateset -->
+     <!-- <i n="173">findingAids/lc/ms997003.xml</i> -->
+
+
+     <!-- Did not validate due to bad code or debug code slipped in. Make sure it is gone. -->
+     <!-- <i n="170">findingAids/howard/Coll._113-ead.xml</i> -->
+     <!-- <i n="171">findingAids/howard/Coll._209-eadxml</i> -->
+
+     <!-- 5 digit dates -->
+     <!-- <i n="169">findingAids/oac/clloy/freeman.xml</i> -->
+
+     <!-- a geoname that can't be looked up by Robbie's code. Should be handled by geo.xsl, but we sanity check as well. -->
+     <!-- <i n="172">findingAids/lc/ms001037.xml</i> -->
+
+     <!-- 
+          <normalized>Great BritainHistoryPuritan Revolution, 1642-1660</normalized>
+     -->
+     <!-- <i n="163">findingAids/ahub/gulsc/1080_2002.xml</i> -->
+
+
+     <!-- logs/nwda.log:geog1: <normalized>Hoquiam (Wash.)$vPhotographs</normalized> -->
+     <!-- <geogname source="lcsh" role="subject" encodinganalog="651" rules="scm">Seattle (Wash.)$xHistory$vPhotographs</geogname> -->
+     <!-- <i n="164">findingAids/nwda/university_of_washington_libraries/WAUPHColl034.xml</i> -->
+
+     <!--
+         extended saxon says: [Fatal Error] :1:67: The entity name must immediately follow the '&' in the
+         entity reference. Unclear if the problem is geogname or date.
+     -->
+     <!-- <i n="161">findingAids/umi/bentley/osborncs.xml</i> -->
+     <!-- <i n="162">findingAids/umi/bentley/withing.xml</i> -->
+
+     <!-- some bug in rawExtract causes multiple <rawExtract> elements, breaks functions expecting a single string. -->
+     <!-- <i n="159">findingAids/ahub/soas/196.xml</i> -->
+
+     <!-- yet another catchall from outline, also has multiple names in controlaccess, controlaccess has family names -->
+     <!-- <i n="134">findingAids/ude/full_ead/mss0489.xml</i> -->
+
+     <!-- test url for umi, but also placeEntry -->
+     <!-- <i n="97">findingAids/umi/bentley/titush.xml</i> -->
+
+
+     <!-- Has a date 1927 to 1928 that at one time didn't parse. Fixed. Correct output: -->
+     <!-- 138                   <dateRange> -->
+     <!-- 139                      <fromDate standardDate="1927">1927</fromDate> -->
+     <!-- 140                      <toDate standardDate="1928">1928</toDate> -->
+     <!-- 141                   </dateRange> -->
+     <!-- 142                   <event>Studies at Vienna University</event> -->
+     <!-- <i n="74">findingAids/mit/MC.0572-ead.xml</i> -->
+
+     <!-- name crunching problem, missging comma, extra info appended "MackayAlexander Murdoch1849-1890Mechanical engineer, missionary" -->
+
+     <!--
+         mackay, name, citation, and relationentry good, but also illustrates duplicate name in different formats
+
+         less cpf_qa/ahub/birminghamspcoll/900_2002.c01.xml
+         less cpf_qa/ahub/birminghamspcoll/900_2002.r001.xml
+     -->
+
+     <!-- ahub normal and odd names for qa -->
+     <!-- <i n="143">findingAids/ahub/bangor/632_2002_2002.xml</i> -->
+     <!-- <i n="144">findingAids/ahub/bangor/1120_2002_2002.xml</i> -->
+     <!-- <i n="145">findingAids/ahub/keelespcoll/619_2002.xml</i> -->
+     <!-- <i n="146">findingAids/ahub/gulsc/Bremner.xml</i> -->
+     <!-- <i n="147">findingAids/ahub/gulsc/MSGEN527.xml</i> -->
+     <!-- <i n="148">findingAids/ahub/soas/85_2002.xml</i> -->
+     <!-- <i n="149">findingAids/ahub/soas/52_2002.xml</i> -->
+     <!-- <i n="150">findingAids/ahub/soas/49_2002.xml</i> -->
+     <!-- <i n="151">findingAids/ahub/soas/117_2002.xml</i> -->
+
+     <!-- has geogname Alexandria (Egypt) -->
+     <!-- <i n="152">findingAids/ahub/soas/40_2002.xml</i> -->
+
+     <!--
+         <part>Fleming, Marston Grieg,       1913-1982 Professor of Mineral Technology</part>
+         less cpf_qa/ahub/imperial/0013_2002.c01.xml
+     -->
+
+     <!-- <i n="153">findingAids/ahub/imperial/0013_2002.xml</i> -->
+
+     <!-- multi persname in origination, breaks code that expects only a single persname -->
+     <!-- <i n="158">findingAids/aao/asu_az_state_university/bernasconi.xml</i> -->
+
+
+
+     <!-- H Lockley -->
+     <!-- <i n="154">findingAids/ahub/lough/gb1176d59.xml</i> -->
+
+     <!-- TS Begbie -->
+     <!-- <i n="156">findingAids/ahub/guas/ugd003-ugd191-18.xml</i> -->
+
+     <!-- PG Kime -->
+     <!-- <i n="157">findingAids/ahub/exeter/0057_2002.xml</i> -->
+
+
+     <!-- <i n="1">findingAids/ahub/soas/172.xml</i> -->
+
+     <!-- unitid has &#10; and a bunch of spaces -->
+     <!-- <i n="142">findingAids/ahub/southampton/7_2002.xml</i> -->
+     <!-- <i n="143">findingAids/ahub/strathclydeuni/1004.xml</i> -->
+
+     <!-- all the ahub qa files, fixing name choice -->
+
+     <!-- <i n="35">findingAids/ahub/aaschool/gb-1968-aa.xml</i> -->
+     <!-- <i n="40">findingAids/ahub/strathclydeuni/948_2002.xml</i> -->
+     <!-- <i n="127">findingAids/ahub/huddersfield/gb1103dc.xml</i> -->
+     <!-- <i n="128">findingAids/ahub/royalpsych/gb2087rcpsych-h.xml</i> -->
+     <!-- <i n="129">findingAids/ahub/guas/gb0248accn2949.xml</i> -->
+     <!-- <i n="130">findingAids/ahub/tate/gb-70-tga-723.xml</i> -->
+     <!-- <i n="135">findingAids/ahub/bath/gb1128-bowen.xml</i> -->
+     <!-- <i n="136">findingAids/ahub/vna_aad/gb71thm-95.xml</i> -->
+     <!-- <i n="137">findingAids/ahub/soas/1_2002.xml</i> -->
+     <!-- <i n="138">findingAids/ahub/soas/162_2002.xml</i> -->
+     <!-- <i n="140">findingAids/ahub/birminghamspcoll/900_2002.xml</i> -->
+
+
+     <!-- some ahub files with inconsistent eadid, fixed by Jane and individually sent back to uva where they were cleaned and substituted into the repo. -->
+     <!-- <i n="137">findingAids/ahub/soas/1_2002.xml</i> -->
+
+     <!-- bioghist/emph and bioghist/text() both of which are invalid, manually fixed original ead -->
+     <!-- <i n="6">findingAids/oac/uci/spcoll/r079.xml</i> -->
+
+     <!--
+         manually fixed chronlist inside list/item. catchall error  line 226, 326
+         
+         less -N cpf_extract/cjh/lbi-ead-snac/121497_121497_SeligsohnKronerFamily.c01.xml
+     -->
+     <!-- <i n="48">findingAids/cjh/lbi-ead-snac/121497_121497_SeligsohnKronerFamily.xml</i> -->
+
+     <!-- less -N cpf_extract/ahub/guas/gb0248accn2949.c01.xml p in p with no other text in the outer p. -->
+     <!-- <i n="129">findingAids/ahub/guas/gb0248accn2949.xml</i> -->
+     
+     <!-- less -N cpf_extract/ahub/tate/gb-70-tga-723.c01.xml bioghist/span change span to p -->
+     <!-- <i n="130">findingAids/ahub/tate/gb-70-tga-723.xml</i> -->
+
+     <!-- bad dates -->
+     <!-- tamucush/00065.xml has an empty geogname -->
+     <!-- <i n="131">findingAids/taro/tamucush/00065.xml</i> -->
+     <!-- <i n="132">findingAids/unc/04953.xml</i> -->
+     <!-- <i n="133">findingAids/duke/classic-EADs/dukeend.xml</i> -->
+
+
+     <!-- various validation issues -->
+     <!-- <i n="125">findingAids/harvard/hua23004.xml</i> -->
+     <!-- <i n="126">findingAids//harvard/hua07007.xml</i> -->
+     <!-- <i n="127">findingAids/ahub/huddersfield/gb1103dc.xml</i> -->
+     <!-- <i n="128">findingAids/ahub/royalpsych/gb2087rcpsych-h.xml</i> -->
+
+     <!-- A second type of outline catchall persname -->
+     <!-- <i n="124">findingAids/lc/mu002008.xml</i> -->
+
+     <!-- item/ref and code was incorrectly creating sibling items. -->
+     <!-- <i n="123">findingAids/ude/full_ead/mss0583.xml</i> -->
+
+     <!-- temp check for <source> will be fixed with new url code -->
+     <!-- <i n="1">findingAids/aao/mna_museum_of_northern_az/FloraBailey.xml</i> -->
+
+     <!-- p/table was turned into text outside any element. Now wrapped in <p> -->
+     <!-- <i n="122">findingAids//utsu/ULA_mss198.xml</i> -->
+
+     <!-- multi unittitle effects text in relationEntry and citation -->
+     <!-- <i n="55">findingAids/umi/clementsmss/ottfam_final.xml</i> -->
+
+     <!-- has xm-replace_text processing instruction in bioghist -->
+     <!-- <i n="54">findingAids/rmoa/wyu-ah11726.xml</i> -->
+
+
+     <!-- list-error line 103, 110, 117, 124, .. 281, 288 -->
+     <!-- <i n="49">findingAids/harvard/hua15005.xml</i> -->
+
+     <!-- error: element "item" from namespace "urn:isbn:1-931666-33-4" not allowed -->
+     <!-- <i n="47">findingAids/umi/bentley/msassemb.xml</i> -->
+
+     <!-- list-error due to list/item/list/defitem around line 260 -->
+     <!-- <i n="50">findingAids/harvard/hua03006.xml</i> -->
+
+     <!-- Had no output due to xmlns not having been fixed by clean.pl. No other QA rationale. -->
+     <!-- Has chronlist dates. -->
+     <!-- <i n="1">findingAids/howard/Coll._007-ead.xml</i> -->
+
+     <!-- bad activeDate[2] which is  toDate -->
+     <!-- <i n="46">findingAids/harvard/hou01429.xml</i> -->
+
+     <!--
+         A small number of collections are spread across two or more repositories. Keep both repositories when
+         constructing the citation.
+     -->
+     <!-- <i n="39">findingAids/duke/classic-EADs/ncmutual.xml</i> -->
+     <!-- <i n="40">findingAids/ahub/strathclydeuni/948_2002.xml</i> -->
+
+
+     <!-- Only has .r001, no .c01 -->
+     <!-- <i n="1">findingAids/afl/165407_FTaSU1977012j.xml</i> -->
+
+     <!-- templates line 847 sequence send to normalize-space() $otherData/did/repository -->
+     <!-- <i n="37">findingAids/ahub/strathclydeuni/948_2002.xml</i> -->
+
+
+     <!--
+         doctype dtd problem
+     -->
+     <!-- <i n="1">findingAids/afl/2951232_U29.58-R13-EAD.xml</i> -->
+
+     <!-- <i n="2">findingAids/afl/2951200_U29.25-U10-EAD.xml</i> -->
+     <!-- <i n="5">findingAids/afl/105639_CFU19xx_14ed2.xml</i> -->
+
+     <!-- had an infinite loop -->
+     <!-- <i n="6">findingAids/ahub/aaschool/gb-1968-aa.xml</i> -->
+
+     <!-- <i n="3">findingAids/ohlink/OhCiUAR0188.xml</i> -->
+     <!--
+         jing validation on span, item
+     -->
+     <!-- <i n="15">findingAids/oac/cuc/mud/h1950.2_carruthers.ead.xml</i> -->
+     <!--  <i n="32">findingAids/umi/bentley/horace.xml</i> -->
+     <!--  <i n="33">findingAids/umi/bentley/umpicas.xml</i> -->
+     <!--  <i n="34">findingAids/aao/asu_az_state_university/blakely.xml</i> -->
+
+      <!-- <i n="31">findingAids/umi/bentley/vpcfo.xml</i> -->
+
+      <!--
+          unittitle and unitdate QA files
+      -->
+      <!-- <i n="1">findingAids/umi/clementsmss/davised_final.xml</i> -->
+      <!-- <i n="2">findingAids/rmoa/nmu1mss581bc.xml</i> -->
+      <!-- <i n="3">findingAids/aao/uoa_university_of_az/UAMS469.xml</i> -->
+      <!-- <i n="1">findingAids/harvard/trc00032.xml</i> -->
+      <!-- <i n="1">findingAids/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.xml</i> -->
+      <!-- <i n="6">findingAids/riamco/US-RPB-ms2007.032.xml</i> -->
+
+
+   </group>
+</list>
