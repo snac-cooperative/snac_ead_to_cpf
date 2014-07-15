@@ -3,6 +3,13 @@
 Table of contents
 -----------------
 * [Overview of EAD to CPF](#overview-of-ead-to-cpf)
+* [Manual command overview](#manual-command-overview)
+* [Creating the file lists](#creating-the-file-lists)
+* [Creating the list of resource URLs](#creating-the-list-of-resource-urls)
+* [The QA files](#the-qa-files)
+* [Creating geographical name data files](#creating-geographical-name-data-files)
+* [Running the CPF extraction](#running-the-cpf-extraction)
+* [Validate with jing](#validate-with-jing)
 
 
 Overview of EAD to CPF
@@ -38,6 +45,22 @@ extended version of Saxon, and we create a symbolic link (shortcut) to Robbie Ja
     > ln -s /lv3/data/snac_saxon/SNAC-Saxon-Extensions/xslt/lib
     > ls -ld lib
     lrwxrwxrwx 1 twl8n snac 51 May 23 12:03 lib -> /lv3/data/snac_saxon/SNAC-Saxon-Extensions/xslt/lib
+
+
+Manual command overview
+-----------------------
+
+You really must use the Perl scripts to run everything as a batch. But to illustrate what happens inside some
+of those scripts here are commands to run the anfra data (minus running geonames lookup).
+
+One tiny typo anywhere here and you'll get no results, or you'll overwrite existing results. 
+
+    find /data/source/findingAids/anfra/ -iname "*.xml" | perl -pe '$_ =~ s/\/data\/source\/findingAids\//.\//g' > anfra_faList.txt
+    ../snac_transform.sh dummy.xml createList.xsl abbreviation="anfra" >> ra.log 2>&1
+    snac_transform.sh createFileLists/anfra_list.xml fix_url.xsl 2> tmp.log > url_xml/anfra_url.xml &
+    snac_transform.sh createFileLists/anfra_list.xml eadToCpf.xsl > logs/anfra.log 2>&1 &
+    snac_transform.sh createFileLists/anfra_list.xml eadToCpf.xsl cpfOutLocation="anfra_cpf" inc_orig=0 > logs/anfra.log 2>&1 &
+
 
 
 
@@ -220,8 +243,8 @@ is going, and the name of the file list.
     Finding Aid Url of contributing respository needs to be determined!
 
 
-Validate with jing. 
--------------------
+Validate with jing
+------------------
 
 When the run is complete we suggest you validate the CPF output. While we have accounted for a variety of flavors of EAD, some data can confuse our XSLT scripts and produce non-compliant CPF output. 
 
