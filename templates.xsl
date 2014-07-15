@@ -1551,8 +1551,16 @@
                     
                     Very weird bug: <return><date> changed to <return><name> by xsl:copy-of. Unclear
                     why. Identity copy works fine, so we use copy-no-ns instead of copy-of. 
+                    
+                    The odp: message is here (currently commented out) in case someone wants to look at all of
+                    the dates. I did look at them by grep'ing out stuff we know how to parse. The remainder
+                    were 73 (or 82, depending on the regexp) non-date strings.
                 -->
                 <xsl:variable name="parsed_date">
+                    <!-- <xsl:message> -->
+                    <!--     <xsl:text>odp: </xsl:text> -->
+                    <!--     <xsl:value-of select="date"/> -->
+                    <!-- </xsl:message> -->
                     <xsl:variable name="dp_dates" select="saxext:date-parser(date)"/>
 
                     <xsl:variable name="seq">

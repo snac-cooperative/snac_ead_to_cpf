@@ -125,14 +125,9 @@
         <xsl:message>
             <xsl:value-of select="concat('Using abbreviation: ', $abbreviation, $cr)"/>
             <xsl:value-of select="concat('        Input file: ', $faListPath, $cr)"/>
-            <xsl:value-of select="concat('       Output file: ', $abbreviation, '.xml', $cr)"/>
-            <!-- <xsl:value-of select="concat('init list: ', $cr)"/> -->
-            <!-- <xsl:copy-of select="$listInitial"/> -->
-            <!-- <xsl:value-of select="$cr"/> -->
+            <xsl:value-of select="concat('       Output file: ', $abbreviation, '_list.xml', $cr)"/>
         </xsl:message>
         
-        <!-- <xsl:result-document href="../../source/fileLists/{$abbreviation}.xml"> -->
-
         <xsl:result-document href="{$abbreviation}_list.xml">
 
             <list sourceCode="{$abbreviation}" fileCount="{$lineCount}" pStart="1" pEnd="{$count}">
