@@ -15,6 +15,8 @@
 # implied. See the License for the specific language governing permissions and limitations under the
 # License.
 
+# todo: if redirected, consider capturing the final redirect URL
+
 # cat tmp_urls.xml | chk_url.pl > tmp.txt 2>&1 &
 
 # Run from a special, empty subdir because sometimes wget downloads a real file. (Maybe after redirecting.)

@@ -31,8 +31,8 @@
          specified in the EAD <eadid>, so some of them need to be "fixed".
          
          Run urls for just one collection (mhs):
-
-         saxon.sh createFileLists/mhs_list.xml fix_url.xsl 2> tmp.log > url_xml/mhs_url.xml
+         
+         snac_transform.sh createFileLists/mhs_list.xml fix_url.xsl 2> tmp.log > url_xml/mhs_url.xml
          
          Run all the URLs aka "fixed urls":
 
@@ -42,14 +42,29 @@
          findingAids/afl-ufl/ufms272.xml
 
     -->
-    <xsl:variable name="ufl" select="document('ufl_e2u.xml')"/>
 
     <!-- 
-         Virginia Heritage conversion of filename prefix to dirname for the URL.
+         Data files for conversion of filename prefix to dirname for the URL.
+         Yes, we lazily load them all for every run, regardless. 
     -->
+    <xsl:variable name="ufl" select="document('ufl_e2u.xml')"/>
+
+    <!-- <xsl:variable name="unl" select="document('unl_e2u.xml')"/> -->
+
     <xsl:variable name="vah" select="document('vah_e2u.xml')"/>
+    
+    <xsl:variable name="fsga" select="document('fsga_e2u.xml')"/>
 
+    <xsl:variable name="howard" select="document('howard_e2u.xml')"/>
 
+    <xsl:variable name="aps" select="document('aps_e2u.xml')"/>
+
+    <xsl:variable name="ahub" select="document('ahub_e2u.xml')"/>
+
+    <xsl:variable name="unc" select="document('unc_e2u.xml')"/>
+
+    <xsl:variable name="sia" select="document('sia_e2u.xml')"/>
+    
     <xsl:strip-space elements="*"/>
     <xsl:output indent="yes" method="xml"/>
 
@@ -105,15 +120,38 @@
         </xsl:variable>
 
         <xsl:variable name="base">
-            <!-- the filename of the full $fn file path, so not strictly what "basename" usually is -->
+            <!--
+                The file name of the full $fn file path, so not strictly what "basename" usually is. (I think
+                it usually is the file name without suffix.)
+                
+                For:
+                /data/source/findingAids/ccfr/FRCGMNOV-751055117-02a.xml
+                
+                $base is: FRCGMNOV-751055117-02a.xml
+            -->
             <xsl:value-of select="replace($fn, '^.*/(.*?)$', '$1')"/>
+        </xsl:variable>
+
+        <xsl:variable name="strict_base">
+            <!--
+                Stricly speaking, the base filename. The other var $base really should have been named
+                something less confusing.
+            -->
+            <xsl:value-of select="replace($fn, '^.*/(.*?).xml$', '$1','i')"/>
         </xsl:variable>
 
         <xsl:for-each select="document($fn)">
             <xsl:choose>
-                <xsl:when test="$repo = 'aao'">
+                <xsl:when test="$repo = 'aao' or $repo = 'aao_missing'">
                     <xsl:variable name="prefix">
-                        <xsl:value-of select="replace($fn, '^.*/aao/(.*?)_.*/.*$', '$1')"/>
+                        <xsl:choose>
+                            <xsl:when test="$repo = 'aao'">
+                                <xsl:value-of select="replace($fn, '^.*/aao/(.*?)_.*/.*$', '$1')"/>
+                            </xsl:when>
+                            <xsl:when test="$repo = 'aao_missing'">
+                                <xsl:value-of select="replace($fn, '^.*/aao_missing/(.*?)_.*/.*$', '$1')"/>
+                            </xsl:when>
+                        </xsl:choose>
                     </xsl:variable>
                     <file url="{concat('http://www.azarchivesonline.org/xtf/view?docId=ead/',$prefix, '/', $base)}">
                         <xsl:value-of select="$ofile"/>
@@ -123,106 +161,93 @@
                     <!--     <xsl:value-of select="concat('http://www.azarchivesonline.org/xtf/view?docId=ead/',$prefix, '/', $base)"/> -->
                     <!-- </url> -->
                 </xsl:when>
-                <xsl:when test="$repo = 'aar'">
+                <xsl:when test="$repo = 'aar' or $repo = 'aar_missing'">
                     <file url="{concat('http://www.aaa.si.edu/collections/findingaids/', $base)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'afl'">
+                <xsl:when test="$repo = 'afl' or $repo = 'afl_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="pid" select="replace($fn, '.*findingAids/afl/(\d+)_.*', '$1')"/>
                     <file url="{concat('http://digitool.fcla.edu/webclient/DeliveryManager?pid=', $pid, '&amp;custom_att_2=direct')}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'ahub'">
+                <xsl:when test="$repo = 'ahub' or $repo = 'ahub_missing'">
+                    <xsl:variable name="url" select="replace($ahub/container/row[@file=$base]/@url, '.xml$', '')"/>
+                    <file url="{$url}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
+                </xsl:when>
+                <xsl:when test="$repo = 'anfra' or $repo = 'anfra_missing'">
+                    <file url="missing:">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
+                </xsl:when>
+                <xsl:when test="$repo = 'aps' or $repo = 'aps_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="ccode">
-                        <xsl:choose>
-                            <xsl:when test="string-length($ead/ead/eadheader/eadid/@countrycode) > 0 and
-                                            $ead/ead/eadheader/eadid[@countrycode != '']">
-                                <xsl:value-of select="lower-case($ead/ead/eadheader/eadid/@countrycode)"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="lower-case($ead/ead/archdesc/did/unitid[1]/@countrycode)"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-
-                    <xsl:variable name="rcode">
-                        <xsl:choose>
-                            <xsl:when test="string-length($ead/ead/eadheader/eadid/@mainagencycode) > 0">
-                                <xsl:value-of select="$ead/ead/eadheader/eadid/@mainagencycode"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="$ead/ead/archdesc/did/unitid[1]/@repositorycode"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-
-                    <xsl:variable name="identifier">
-                        <!-- 
-                             eadid/@identifier not reliable. For
-                             /data/source/findingAids/ahub/aaschool/gb-1968-aa.xml the correct value is "AA"
-                             found in unitid/@identifier.
-                        -->
-                        <xsl:value-of select="lower-case(replace($ead/ead/archdesc/did/unitid[1]/@identifier, '\s+', ''))"/>
-                    </xsl:variable>
-
+                    <xsl:variable name="url_from_base" select="concat('http://www.amphilsoc.org/mole/view?docId=ead/', $base)"/>
+                    <!--
+                       APS normally uses eadid/@url, but when missing $base seems to work, and when there is a
+                       mismatch between @url and the filename, use the filename which accurately reflects the
+                       unitid.
+                       
+                       We also have URLs manually gathered by Scott for URLs that were 404 by the usual techniques.
+                       
+                       Use Scott's hand created URLs in preference to any others.
+                    -->
                     <xsl:choose>
-                        <xsl:when test="string-length($identifier) > 0">
-                            <!-- .html is human readable. .xml works and is raw xml -->
-                            <file url="{concat('http://archiveshub.ac.uk/data/', $ccode, $rcode, '-', $identifier, '.html')}">
+                        <xsl:when test="$aps/container/row[@file=$base]/@url">
+                            <xsl:variable name="url" select="$aps/container/row[@file=$base]/@url"/>
+                            <file type="missing, using aps_e2u.xml"
+                                  url="{$url}">
                                 <xsl:value-of select="$ofile"/>
                             </file>
                         </xsl:when>
-                        <xsl:when test="matches($ead/ead/archdesc/did/unitid[1], '^[a-z]+\s+\d+', 'i')">
-                            <!--
-                                Test for "GB 1234" or "xx nn" although "x n" will pass the test.
-
-                                Works on this: <eadid countrycode="GB" mainagencycode="372">GB 1837 DES/RHZ</eadid >
-
-                                Doesn't work on this: <eadid mainagencycode="582" publicid="GB 582 HWUA PA" countrycode="GB" identifier="HWUA PA">GB 582 HWUA PA</eadid>
-                                which turns out to be "gb582-0582hwuapa"
-                                
-                                assume a format like "GB 1837 DES/RHZ", lower-case, first space remove, second
-                                space change to '-', remaining spaces removed
-                            -->
-                            <xsl:variable name="id_as_identifier">
-                                <xsl:value-of select="lower-case(
-                                                      replace(
-                                                      replace($ead/ead/archdesc/did/unitid[1], '^(.*?)\s+(.*?)\s+(.*)$', '$1$2-$3')
-                                                      , '\s+', ''))"/>
-                            </xsl:variable>
-                            <!-- .html is human readable. .xml works and is raw xml -->
-                            <file url="{concat('http://archiveshub.ac.uk/data/', $id_as_identifier, '.html')}">
+                        <xsl:when test="$ead/ead/eadheader/eadid/@url != '' and
+                                        $ead/ead/eadheader/eadid/@url = $url_from_base">
+                            <!-- <xsl:value-of select="$ead/ead/eadheader/eadid/@url"/> -->
+                            <file type="using url attr" url="{$ead/ead/eadheader/eadid/@url}">
+                                <xsl:value-of select="$ofile"/>
+                            </file>
+                        </xsl:when>
+                        <xsl:when test="$ead/ead/eadheader/eadid/@url != '' and
+                                        $ead/ead/eadheader/eadid/@url != $url_from_base">
+                            <!-- <xsl:message> -->
+                            <!--     <xsl:value-of select="concat($fn, $cr)"/> -->
+                            <!--     <xsl:value-of select="concat('warning: at_url does not match url_from_base', $cr)"/> -->
+                            <!--     <xsl:value-of select="concat('at_url: ', $ead/ead/eadheader/eadid/@url, $cr)"/> -->
+                            <!--     <xsl:value-of select="concat('url_from_base: ', $url_from_base, $cr)"/> -->
+                            <!-- </xsl:message> -->
+                            <file type="url mismatch, using filename"
+                                  orig_url_attr="{$ead/ead/eadheader/eadid/@url}"
+                                  url="{concat('http://www.amphilsoc.org/mole/view?docId=ead/', $base)}">
                                 <xsl:value-of select="$ofile"/>
                             </file>
                         </xsl:when>
                         <xsl:otherwise>
-                            <file url="">
+                            <!-- <xsl:value-of select="concat('http://www.amphilsoc.org/mole/view?docId=ead/', $base)"/> -->
+                            <!-- <xsl:message> -->
+                            <!--     <xsl:value-of select="concat($fn, $cr)"/> -->
+                            <!--     <xsl:value-of select="concat('warning: at_url does not match url_from_base', $cr)"/> -->
+                            <!--     <xsl:value-of select="concat('at_url: ', $ead/ead/eadheader/eadid/@url, $cr)"/> -->
+                            <!--     <xsl:value-of select="concat('url_from_base: ', $url_from_base, $cr)"/> -->
+                            <!-- </xsl:message> -->
+                            <file type="missing, using filename"
+                                  url="{concat('http://www.amphilsoc.org/mole/view?docId=ead/', $base)}">
                                 <xsl:value-of select="$ofile"/>
                             </file>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>
-                <xsl:when test="$repo = 'anfra'">
-                </xsl:when>
-                <xsl:when test="$repo = 'aps'">
-                    <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
-                    <file url="{$url}">
-                        <xsl:value-of select="$ofile"/>
-                    </file>
-                </xsl:when>
-                <xsl:when test="$repo = 'bnf'">
+                <xsl:when test="$repo = 'bnf' or $repo = 'bnf_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://archivesetmanuscrits.bnf.fr/ead.html?id=', $eadid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'byu'">
+                <xsl:when test="$repo = 'byu' or $repo = 'byu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <!--
                         Seems to work to parse out "UA 5399" from eadid@publicid.
@@ -233,10 +258,15 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'cjh'">
-                    <xsl:variable name="ead" select="document($fn)"/>
+                <xsl:when test="$repo = 'ccfr' or $repo = 'ccfr_missing'">
+                    <file url="{concat('http://ccfr.bnf.fr/portailccfr/jsp/index_view_direct_anonymous.jsp?record=eadcgm:EADI:', $base)}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
+                </xsl:when>
+                <xsl:when test="$repo = 'cjh' or $repo = 'cjh_missing'">
+                    <!-- <xsl:variable name="ead" select="document($fn)"/> -->
                     <!-- Get a pid from the filename. -->
-                    <file url="{concat('http://findingaids.cjh.org/?pID=', replace($fn, '.*/(\d)_.* ', '$1'))}">
+                    <file url="{concat('http://findingaids.cjh.org/?pID=', replace($fn, '^.*/(\d+)_.*$', '$1'))}">
                         <xsl:value-of select="$ofile"/>
                     </file>
 
@@ -246,29 +276,29 @@
                     <!--     <xsl:value-of select="$ofile"/> -->
                     <!-- </file> -->
                 </xsl:when>
-                <xsl:when test="$repo = 'colu'">
+                <xsl:when test="$repo = 'colu' or $repo = 'colu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="eadid" select="replace($ead/ead/eadheader/eadid, '_ead.xml', '')"/>
+                    <xsl:variable name="eadid" select="normalize-space(replace($ead/ead/eadheader/eadid, '_ead.xml', ''))"/>
                     <xsl:variable name="magency" select="$ead/ead/eadheader/eadid/@mainagencycode"/>
                     <file url="{concat('http://findingaids.cul.columbia.edu/ead/', $magency,'/', $eadid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'crnlu'">
+                <xsl:when test="$repo = 'crnlu' or $repo = 'crnlu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://rmc.library.cornell.edu/EAD/xml/dlxs/', $eadid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'duke'">
+                <xsl:when test="$repo = 'duke' or $repo = 'duke_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'fivecol'">
+                <xsl:when test="$repo = 'fivecol' or $repo = 'fivecol_missing'">
                     <xsl:variable name="m2code">
                         <ma code="smitharchives">manosca</ma>
                         <ma code="mountholyoke">mshm</ma>
@@ -286,43 +316,61 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'fsga'">
-                    
+                <xsl:when test="$repo = 'fsga' or $repo = 'fsga_missing'">
+                    <xsl:variable name="ead" select="document($fn)"/>
+                    <xsl:variable name="unittitle" select="$ead/ead/archdesc/did/unittitle"/>
+                    <xsl:variable name="url" select="$fsga/container/row[@title=$unittitle]/@url"/>
+                    <file url="{$url}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'harvard'">
+                <xsl:when test="$repo = 'harvard' or $repo = 'harvard_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://oasis.lib.harvard.edu//oasis/deliver/deepLink?_collection=oasis&amp;uniqueId=', $eadid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'howard'">
+                <xsl:when test="$repo = 'howard' or $repo = 'howard_missing'">
+                    <xsl:variable name="ead" select="document($fn)"/>
+                    <xsl:variable name="unitid" select="normalize-space($ead/ead/archdesc/did/unitid)"/>
+                    <xsl:variable name="url" select="$howard/container/row[@collection_no=$unitid]/@url"/>
+                    <file url="{$url}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'inu'">
+                <xsl:when test="$repo = 'inu' or $repo = 'inu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://webapp1.dlib.indiana.edu/findingaids/view?doc.view=entire_text&amp;docId=', $eadid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'lds'">
+                <xsl:when test="$repo = 'lds' or $repo = 'lds_missing'">
                     <!-- I tested 2 records from lds using exptr. One worked and one is 404. Deemed unreliable. -->
                     <!-- <xsl:variable name="ead" select="document($fn)"/> -->
                     <!-- <xsl:variable name="extptr" select="$ead/ead/eadheader/filedesc/publicationstmt/address/addressline/extptr[matches(@xlink:href, 'eadview\.lds\.org')]/@xlink:href"/> -->
                     <!-- <file url="{replace($extptr, ' ', '%20')}"> -->
-                    <!--     <xsl:value-of select="$ofile"/> -->
+                    <!--     <xsl:copy-of select="$stuff"/> -->
                     <!-- </file> -->
+
+                    <file url="missing:">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'lc'">
+                <xsl:when test="$repo = 'lc' or $repo = 'lc_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{$eadid}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'meas'">
+                <xsl:when test="$repo = 'meas' or $repo = 'meas_missing'">
+                    <file url="missing:">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'mhs'">
+                <xsl:when test="$repo = 'mhs' or $repo = 'mhs_missing'">
                     <xsl:variable name="basename" select="replace($fn, '^.*/(.*?.xml)$', '$1')"/>
                     <file url="{concat('http://www.mnhs.org/library/findaids/', $basename)}">
                         <xsl:value-of select="$ofile"/>
@@ -335,7 +383,7 @@
                     <!--     <xsl:value-of select="$ofile"/> -->
                     <!-- </file> -->
                 </xsl:when>
-                <xsl:when test="$repo = 'mit'">
+                <xsl:when test="$repo = 'mit' or $repo = 'mit_missing'">
                     <!-- 
                          Use eadid@url, but change research/collections- to research/collections/collections- as necessary.
                     -->
@@ -345,49 +393,67 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'ncsu'">
+                <xsl:when test="$repo = 'ncsu' or $repo = 'ncsu_missing'">
+                    <!--
+                        NCSU has some missing http:// on urls, as well as wrong and inconsistent host
+                        names. Just replace everything up to the first / with the http:// protocol and
+                        www.lib.ncsu.edu hostname.
+                        
+                        <file url="http://www.ncsu.edu/findingaids/mc00261">findingAids/ncsu/mc00261.xml</file>
+                        <file url="www.lib.ncsu.edu/findingaids/ua002_001_007">findingAids/ncsu/ua002_001_007.xml</file>
+                        <file url="www.lib.ncsu.edu/findingaids/mc00459">findingAids/ncsu/mc00459.xml</file>
+                        <file url="www.lib.ncsu.edu/findingaids/mc00471">findingAids/ncsu/mc00471.xml</file>
+                        <file url="http//:www.lib.ncsu.edu/findingaids/mc00473">findingAids/ncsu/mc00473.xml</file>
+                        <file url="www.lib.ncsu.edu/findingaids/mc00197">findingAids/ncsu/mc00197.xml</file>
+                        <file url="http://www.lib.ncsu/findingaids/ua022_035/">findingAids/ncsu/ua022_035.xml</file>
+                    -->
                     <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="url" select="normalize-space($ead/ead/eadheader/eadid/@url)"/>
+                    <xsl:variable name="url" select="replace(
+                                                     normalize-space($ead/ead/eadheader/eadid/@url),
+                                                     '^http://.*?/', 'http://www.lib.ncsu.edu/')"/>
+                    
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nlm'">
+                <xsl:when test="$repo = 'nlm' or $repo = 'nlm_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://oculus.nlm.nih.gov/', $eadid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nmaia'">
+                <xsl:when test="$repo = 'nmaia' or $repo = 'nmaia_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://nmai.si.edu/sites/1/files/archivecenter/', $eadid, '.html')}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nwda'">
+
+                <xsl:when test="$repo = 'nwda' or $repo = 'nwda_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nwu'">
+
+                <xsl:when test="$repo = 'nwu' or $repo = 'nwu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="identifier" select="$ead/ead/eadheader/eadid/@identifier"/>
                     <file url="{concat('http://findingaids.library.northwestern.edu/catalog/', $identifier)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nypl'">
+                <xsl:when test="$repo = 'nypl' or $repo = 'nypl_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="replace($ead/ead/eadheader/eadid/@url, '.xml$', '')"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nysa'">
+                <xsl:when test="$repo = 'nysa' or $repo = 'nysa_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <!--
                        Note: unitid (not the more common eadid) 
@@ -397,29 +463,39 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'nyu'">
-                    <xsl:variable name="coll" select="replace($fn, '.*findingAids/nyu/(.*?)/.*', '$1')"/>
+                <xsl:when test="$repo = 'nyu' or $repo = 'nyu_missing'">
+                    <!--
+                        Collections: nyhs, bhs, fales, archives, tamwag, rism, poly.
+                    -->
+                    <xsl:variable name="coll" select="replace($fn, '.*findingAids/nyu.*?/(.*?)/.*', '$1')"/>
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://dlib.nyu.edu/findingaids/html/', $coll, '/', $eadid, '/', $eadid, '.html')}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'oac'">
+                <xsl:when test="$repo = 'oac' or $repo = 'oac_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="identifier" select="$ead/ead/eadheader/eadid/@identifier"/>
                     <file url="{concat('http://www.oac.cdlib.org/', $identifier)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'ohlink'">
-                    <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
-                    <file url="{concat('http://rave.ohiolink.edu/archives/ead/', $eadid)}">
+                <xsl:when test="$repo = 'ohlink' or $repo = 'ohlink_missing'">
+                    <!--
+                        Using eadid results in 144 missing URLs
+                    -->
+                    <!-- <xsl:variable name="ead" select="document($fn)"/> -->
+                    <!-- <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/> -->
+
+                    <!-- 
+                         Simply use the strict base name. Easier, more reliable (I hope).
+                    -->
+                    <file url="{concat('http://rave.ohiolink.edu/archives/ead/', $strict_base)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'pacscl'">
+                <xsl:when test="$repo = 'pacscl' or $repo = 'pacscl_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <!-- dirname is like coll in some other repositories -->
                     <xsl:variable name="dirname" select="upper-case(replace($fn, '.*findingAids/pacscl/(.*?)/.*', '$1'))"/>
@@ -430,26 +506,26 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'pu'">
+                <xsl:when test="$repo = 'pu' or $repo = 'pu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'riamco'">
+                <xsl:when test="$repo = 'riamco' or $repo = 'riamco_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <file url="{concat('http://library.brown.edu/riamco/render.php?eadid=', $eadid, '&amp;view=title')}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'rmoa'">
+                <xsl:when test="$repo = 'rmoa' or $repo = 'rmoa_missing'">
                     <file url="{concat('http://rmoa.unm.edu/docviewer.php?docId=', $base)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'rutu'">
+                <xsl:when test="$repo = 'rutu' or $repo = 'rutu_missing'">
                     <xsl:variable name="coll" select="replace($fn, '.*findingAids/rutu/(.*?)/.*', '$1')"/>
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
@@ -466,9 +542,13 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'sia'">
+                <xsl:when test="$repo = 'sia' or $repo = 'sia_missing'">
+                    <xsl:variable name="url" select="$sia/container/row[@file=$base]/@url"/>
+                    <file url="{$url}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'syru'">
+                <xsl:when test="$repo = 'syru' or $repo = 'syru_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <xsl:variable name="letter" select="substring($eadid, 1,1)"/>
@@ -476,7 +556,7 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'taro'">
+                <xsl:when test="$repo = 'taro' or $repo = 'taro_missing'">
                     <!-- file path suffix, lacking a better name for it -->
                     <xsl:variable name="fp_suffix" select="replace($fn, '.*/taro/(.*?)/.*?$', '$1')"/>
 
@@ -497,14 +577,19 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'ual'">
-                    <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
-                    <file url="{concat('http://acumen.lib.ua.edu/', $eadid, '.ead.xml')}">
+                <xsl:when test="$repo = 'ual' or $repo = 'ual_missing'">
+                    <!--
+                        jan 8 2015 eadid seems unreliable. Some are missing. Some have extension ".ead.xml"
+                        which causes the URLs to fail. Rever to using the file name base.
+                    -->
+                    <!-- <xsl:variable name="ead" select="document($fn)"/> -->
+                    <!-- <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/> -->
+                    <xsl:variable name="basename" select="replace($fn, '.*/(.*).ead.xml$', '$1')"/>
+                    <file url="{concat('http://acumen.lib.ua.edu/', $basename)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'uchic'">
+                <xsl:when test="$repo = 'uchic' or $repo = 'uchic_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <!--
@@ -514,14 +599,14 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'uct'">
+                <xsl:when test="$repo = 'uct' or $repo = 'uct_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'ude'">
+                <xsl:when test="$repo = 'ude' or $repo = 'ude_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="replace(normalize-space($ead/ead/eadheader/eadid), '(.*)\.xml', '$1')"/>
                     <!--
@@ -535,7 +620,7 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'afl-ufl'">
+                <xsl:when test="$repo = 'afl-ufl' or $repo = 'afl-ufl_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
                     <xsl:variable name="url"
@@ -544,21 +629,21 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'uil'">
+                <xsl:when test="$repo = 'uil' or $repo = 'uil_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="aicid" select="replace($ead/ead/eadheader/eadid/@identifier, '.*:(.*)', '$1')"/>
                     <file url="{concat('http://archives.library.illinois.edu/archon/?p=collections/controlcard&amp;id=', $aicid)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'uks'">
+                <xsl:when test="$repo = 'uks' or $repo = 'uks_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'umd'">
+                <xsl:when test="$repo = 'umd' or $repo = 'umd_missing'">
                     <!--
                         xml version is concat('http://digital.lib.umd.edu/oclc/', $base)
                     -->
@@ -566,7 +651,7 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'umi'">
+                <xsl:when test="$repo = 'umi' or $repo = 'umi_missing'">
                     <!--
                         name-value look up
                     -->
@@ -584,18 +669,37 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'umn'">
+                <xsl:when test="$repo = 'umn' or $repo = 'umn_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/>
-                    <file url="{concat('http://special.lib.umn.edu/findaid/xml/', $eadid, '.xml')}">
+                    <!--
+                        Using eadid is broken for 174 urls, most are obvious typo or format issues. The
+                        filename appears to be more reliable.
+                    -->
+                    <!-- <xsl:variable name="eadid" select="normalize-space($ead/ead/eadheader/eadid)"/> -->
+                    <!-- <file url="{concat('http://special.lib.umn.edu/findaid/xml/', $eadid, '.xml')}"> -->
+
+                    <file url="{concat('http://special.lib.umn.edu/findaid/xml/', $base)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'unc'">
+                <xsl:when test="$repo = 'unc' or $repo = 'unc_missing'">
+                    <xsl:variable name="url" select="$unc/container/row[@file=$base]/@url"/>
+                    <file url="{$url}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'une'">
+                <xsl:when test="$repo = 'unl' or $repo = 'unl_missing'">
+                    <!--
+                        Renamed from "une". New file name (base) is used verbatim as part of the URL. 
+                    -->
+                    <xsl:variable name="new_name">
+                        <xsl:value-of select="replace($base, '\.xml$', '.html')"/>
+                    </xsl:variable>
+                    <file url="{concat('http://archivespec.unl.edu/findingaids/', $new_name)}">
+                        <xsl:value-of select="$ofile"/>
+                    </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'utsa'">
+                <xsl:when test="$repo = 'utsa' or $repo = 'utsa_missing'">
                     <!--
                         Getting the numerical part of the $base file name seems easier and at least as
                         reliable as parsing out the same digits from the eadid.
@@ -605,21 +709,21 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'utsu'">
+                <xsl:when test="$repo = 'utsu' or $repo = 'utsu_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'uut'">
+                <xsl:when test="$repo = 'uut' or $repo = 'uut_missing'">
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="identifier" select="$ead/ead/eadheader/eadid/@identifier"/>
                     <file url="{concat('http://nwda.orbiscascade.org/ark:/', $identifier)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'vah'">
+                <xsl:when test="$repo = 'vah' or $repo = 'vah_missing'">
                     <xsl:variable name="prefix" select="lower-case(replace($base, '^(.*?)\d+.xml', '$1'))"/>
                     <xsl:variable name="dirname" select="$vah/list/inst[@prefix=$prefix]/@dirname"/>
                     <!-- <xsl:variable name="ead" select="document($fn)"/> -->
@@ -628,19 +732,32 @@
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>
-                <xsl:when test="$repo = 'yale'">
+                <xsl:when test="$repo = 'yale' or $repo = 'yale_missing'">
+                    <!-- 
+                         Normally yale uses the eadid/@url, but some of those are missing. The filename
+                         without the extension seems to be an exact match for the ead id, so try
+                         it. find_empty_elements.pl will log any missing URLs.
+                    -->
                     <xsl:variable name="ead" select="document($fn)"/>
                     <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
-                    <file url="{$url}">
-                        <xsl:value-of select="$ofile"/>
-                    </file>
+                    <xsl:choose>
+                        <xsl:when test="$ead/ead/eadheader/eadid/@url != ''">
+                            <file url="{$url}">
+                                <xsl:value-of select="$ofile"/>
+                            </file>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <file url="{concat('http://hdl.handle.net/10079/fa/', replace($base, '\.xml$', ''))}">
+                                <xsl:value-of select="$ofile"/>
+                            </file>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message>
                         <xsl:text>Error code not found: </xsl:text>
-                        <xsl:value-of select="concat($repo, 'fn: ', $fn)"/>
+                        <xsl:value-of select="concat($repo, ' fn: ', $fn)"/>
                     </xsl:message>
-
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:for-each>

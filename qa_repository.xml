@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list xmlns="http://socialarchive.iath.virginia.edu/"
+      sourceCode="oac"
+      fileCount="10"
+      pStart="1"
+      pEnd="1"
+      force="1">
+ <!--  Number of groups: 1 Group size: 500  -->
+ <group n="1">
+
+     <!-- repository mixed corpname with subarea -->
+     <i n="60">findingAids/colu/nnc-ua/ldpd_8429267_ead.xml</i>
+
+
+     <!-- repository/corpname with text() and subarea -->
+     <i n="95">findingAids/uks/ksrl.sc.holyromanempire.xml</i>
+
+     <!-- Missing repository, we create a repository that has text and nodes inside <repository> -->
+     <i n="88">findingAids/syru/queen_vic.xml</i>
+
+     <!--
+         repository parts with hyphen.
+         Has repository/(text()|subarea)
+     -->
+     <i n="92">findingAids/ude/minimal_ead/mss0272.xml</i>
+
+     <!-- 
+          unl has no archdesc/did/repository so we have to workaround using the unitit@repositorycode.
+     -->
+     <i n="178">findingAids/unl/RG12-10-50-wimberly-unl.xml</i>
+
+     <!--
+         A small number of collections are spread across two or more repositories. Keep both repositories when
+         constructing the citation.
+         
+         Causes problems with new repository code.
+     -->
+     <i n="39">findingAids/duke/classic-EADs/ncmutual.xml</i>
+
+     <!-- templates line 847 sequence send to normalize-space() $otherData/did/repository -->
+     <i n="37">findingAids/ahub/strathclydeuni/948_2002.xml</i>
+
+     <!-- exciting variations in <repository> -->
+     
+     <!-- 
+          Mixed text node plus <corpname> messes up simply serialization.
+          
+          <repository label="Repository">The <corpname source="lcnaf">Bancroft Library</corpname>
+          <address>
+          <addressline>University of California, Berkeley</addressline>
+          <addressline>Berkeley, California, 94720-6000</addressline>
+          <addressline>Phone: (510) 642-6481</addressline>
+          <addressline>Fax: (510) 642-7589</addressline>
+          <addressline>Email: bancref@library.berkeley.edu</addressline>
+          <addressline>URL: http://bancroft.berkeley.edu/</addressline>
+          </address>
+          </repository>
+     -->
+     <i n="3">findingAids/oac/berkeley/bancroft/m88_206_cubanc.xml</i>
+
+     <!--
+         various jing errors, mostly (all?) in biogHist
+         
+         If corpname and text, then ignore the text, otherwise we get bad comma space formatting.
+         
+         <repository label="Repository"><corpname>Claremont Colleges. Library. </corpname> Special Collections, Honnold/Mudd
+         Library. <address><addressline>Claremont, CA 91711</addressline></address>
+         </repository>
+     -->
+     <i n="14">findingAids/oac/cuc/mud/h1950.1.ead.xml</i>
+
+     <!--
+         Repo with no clear repo name.
+
+         <repository label="Repository">
+         <address>
+         <addressline>Special Collections Research Center</addressline>
+         <addressline>University of Chicago Library</addressline>
+         <addressline>1100 East 57th Street</addressline>
+         <addressline>Chicago, Illinois 60637 U.S.A.</addressline>
+         </address>
+         </repository>
+     -->
+     <i n="90">findingAids/uchic/ICU.SPCL.STARRMEX.xml</i>
+
+     <!--
+         <repository encodinganalog="852" label="Repository">
+         <corpname/>
+         </repository>
+         
+         <prefercite>
+         <head>Preferred Citation</head>
+         <p>New Mexico Historic American Building Survey (HABS), Fray Angélico Chávez History Library, Santa Fe, New Mexico, USA</p>
+         </prefercite>
+     -->
+     <i n="86">findingAids/rmoa/nmsmac418-s.xml</i>
+
+     <!--
+         list-error due to list/item/list/defitem line 103, 110, 117, 124, .. 281, 288
+         Has repository/extref
+     -->
+     <i n="49">findingAids/harvard/hua15005.xml</i>
+
+
+ </group>

@@ -3,6 +3,13 @@
 # We write output to ra.log below, so use a different log file for Perl/scripting/stderr/stdout logging.
 
 # ./run_all.pl > rax.log 2>&1 &
+# Note that the createList.xsl command below writes to ra.log.
+
+# If you only want to run a single repo, follow this example:
+
+# find /data/source/findingAids/aps/ -iname "*.xml" | perl -pe '$_ =~ s/\/data\/source\/findingAids\//.\//g' > aps_faList.txt
+# ../snac_transform.sh dummy.xml createList.xsl abbreviation="aps" >> ra.log 2>&1
+
 
 use strict;
 use Data::Dumper;
@@ -33,6 +40,9 @@ sub main
         print "$cmd\n";
         print `$cmd`;
         # system($cmd);
+
+        # It is ok to >> into ra.log as long as the main command uses rax.log. Two processes writing to one
+        # file destroys some output.
 
         print "../snac_transform.sh dummy.xml createList.xsl abbreviation=\"$dir\" >> ra.log 2>&1\n";
 

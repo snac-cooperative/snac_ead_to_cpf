@@ -25,6 +25,11 @@
 # ./extract_all.pl review=1 > rev.log 2>&1 &
 # ./extract_all.pl review=1 inc_orig=1 > rev.log 2>&1 &
 
+# The review feature works on separate data, and creates separate output, both to support fully functional
+# review data. (The review probably has URLs completed, which is an issue with the normal QA which cannot
+# complete URLs.) Review reads file lists from ./review_file_lists/ instead of ./createFielLists/. It logs to
+# ./rlogs/ instead of ./logs/. And it writes results to ./cpf_review/ instead of ./cpf_extract/.
+
 # jun 2 2014: add localtime() so we can track how long each repo takes to run
 
 # jun 16 2014 add command line arg "review" to make it run the review file lists

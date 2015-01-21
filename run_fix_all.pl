@@ -57,7 +57,8 @@ sub main
         my $abbrev = $1;
 
         print "$abbrev $file\n";
-
-        system("saxon.sh $file fix_url.xsl 2>> fix.log > url_xml/$abbrev\_url.xml");
+        my $cmd = "snac_transform.sh $file fix_url.xsl 2>> fix.log > url_xml/$abbrev\_url.xml";
+        print "$cmd\n";
+        system($cmd);
     }
 }

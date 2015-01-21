@@ -4,7 +4,6 @@
     xmlns:eac="urn:isbn:1-931666-33-4"
     xmlns:functx="http://www.functx.com"
     xmlns:snac="http://socialarchive.iath.virginia.edu/"
-    xmlns:rsnac="http://socialarchive.iath.virginia.edu/"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -36,14 +35,14 @@
         > ls -ld lib
         lrwxrwxrwx 1 twl8n snac 51 May 23 12:03 lib -> /lv3/data/snac_saxon/SNAC-Saxon-Extensions/xslt/lib
     -->
-  <xsl:include href="lib/java-geo-lib.xsl"/>
-
+    <xsl:include href="lib/java-geo-lib.xsl"/>
+    
     <xsl:template name="CpfRoot">
         <xsl:param name="counts" tunnel="yes"/>
         <xsl:param name="otherData" tunnel="yes"/>
         <xsl:param name="entitiesForCPFRelations" tunnel="yes"/>
-        <xsl:param name="debug"/>
-
+        <xsl:param name="debug" tunnel="yes"/>
+        
         <!--
             Adding xmlns:snac="http://socialarchive.iath.virginia.edu/" didn't cause it to stay only in the
             <eac-cpf> element, but Saxon puts the namespace alias into each snac: element. Apparently global
@@ -52,7 +51,9 @@
         -->
         <eac-cpf xmlns="urn:isbn:1-931666-33-4" xmlns:xlink="http://www.w3.org/1999/xlink">
             <xsl:call-template name="CpfControl">
-                <xsl:with-param name="otherData" tunnel="yes" select="$otherData"/>
+                <!--
+                    All params are tunneled, so no need to list them here. Params used are: otherData, debug.
+                -->
             </xsl:call-template>
         <!--
             Anything we output here will be in the CPF output.
@@ -81,21 +82,19 @@
                 <xsl:value-of select="$otherData/bioghist/head" separator=" head: "/>
             </xsl:message>
         </xsl:if>
-
-            <!-- <objectXMLWrap type="normalizeStepFive"> -->
-            <!--     <xsl:copy-of select="$debug"/> -->
-            <!-- </objectXMLWrap> -->
-            <xsl:call-template name="CpfDescription">
-                <xsl:with-param name="counts" tunnel="yes" select="$counts"/>
-                <xsl:with-param name="otherData" tunnel="yes" select="$otherData"/>
-                <xsl:with-param name="entitiesForCPFRelations" tunnel="yes" select="$entitiesForCPFRelations"/>
-            </xsl:call-template>
+        <xsl:call-template name="CpfDescription">
+            <!-- Tunnelled params don't need to be listed. -->
+            <!-- <xsl:with-param name="counts" tunnel="yes" select="$counts"/> -->
+            <!-- <xsl:with-param name="otherData" tunnel="yes" select="$otherData"/> -->
+            <!-- <xsl:with-param name="entitiesForCPFRelations" tunnel="yes" select="$entitiesForCPFRelations"/> -->
+        </xsl:call-template>
         </eac-cpf>
-    </xsl:template>
+    </xsl:template> <!-- CpfRoot -->
 
     <xsl:template name="CpfControl">
         <xsl:param name="otherData" tunnel="yes"/>
-        <xsl:param name="original_ead" tunnel="yes"/> <!-- tunnel from tpt_process -->
+        <xsl:param name="debug" tunnel="yes"/>
+        
         <control xmlns="urn:isbn:1-931666-33-4">
             <recordId>
                 <xsl:value-of select="@recordId"/>
@@ -115,10 +114,12 @@
             <maintenanceHistory>
                 <maintenanceEvent>
                     <eventType>created</eventType>
-                    <eventDateTime standardDateTime="{current-dateTime()}"/>
+                    <eventDateTime standardDateTime="{current-dateTime()}">
+                        <xsl:value-of select="current-dateTime()"/>
+                    </eventDateTime>
                     <agentType>machine</agentType>
                     <agent>XSLT eadToCpf.xml running under /Saxon HE 9</agent>
-                    <eventDescription>Derived from ead instance.</eventDescription>
+                    <eventDescription>Derived from EAD instance.</eventDescription>
                 </maintenanceEvent>
             </maintenanceHistory>
             <sources>
@@ -132,57 +133,50 @@
                             <filename>
                                 <xsl:value-of select="@fn"/>
                             </filename>
+                            <!-- 
+                                 The original EAD source is part of a debug variable $normalizeStepFive. This
+                                 variable is the last big variable in the main processing loop that still has
+                                 the context when the context is the original data. Trying to output all of
+                                 the original data when the original data is large (many Mbytes) causes a Java
+                                 string array length exception java.lang.ArrayIndexOutOfBoundsException:
+                                 -32768 which I take to mean there is an array somewhere with an 8 bit index
+                                 limitation.
+                                 
+                                 The workaround is to only output what we hope are relevant parts of the
+                                 original data when the original data is large.
+                                 
+                                 See the beginning of xsl:variable name="normalizeStepFive" in eadToCpf.xsl.
+                            -->
                             <xsl:if test="$inc_orig = true()">
-                                <ead_source>
-                                    <xsl:copy-of select="$original_ead"/>
-                                </ead_source>
+                                <xsl:choose>
+                                   <xsl:when test="string-length($debug/ead_source) > 64000">
+                                       <abbreviated_original>
+                                           <xsl:copy-of select="$debug/ead_source/ead/eadheader"/>
+                                           <xsl:copy-of select="$debug/ead_source/ead/archdesc/did"/>
+                                           <xsl:copy-of select="$debug/ead_source/ead/archdesc//dsc//(persname | corpname | famname)"/>
+                                       </abbreviated_original>
+                                   </xsl:when>
+                                   <xsl:otherwise>
+                                       <xsl:copy-of select="$debug/ead_source"/>
+                                   </xsl:otherwise>
+                                </xsl:choose>
                             </xsl:if>
                             <xsl:for-each select="rawExtract/*">
                                 <!-- Easier to have an element for all enties, and then use an attribute for the entity type. -->
                                 <ead_entity en_type="{name(.)}">
                                     <xsl:copy-of select="@* | text() | *"/>
                                 </ead_entity>
-                                
-                                <!-- <xsl:element name="{name(.)}" namespace="urn:isbn:1-931666-22-9"> -->
-                                
-                                <!-- Jing upset when this wasn't in a container: "corpname" from namespace "urn:isbn:1-931666-33-4" not allowed in this context -->
-                                <!-- <xsl:element name="{name(.)}"> -->
-                                <!--     <xsl:copy-of select="@* | text() | *"/> -->
-                                <!-- </xsl:element> -->
                             </xsl:for-each>
+                            <!-- Anything here goes into the CPF output, which is nice for debugging. -->
+                            <!-- <xsl:copy-of select="$otherData/did/unittitle"/> -->
+                            <!-- <xsl:copy-of select="$otherData/did/unitdate"/> -->
                         </container>
                     </objectXMLWrap>
                 </source>
             </sources>
         </control>
-    </xsl:template>
+    </xsl:template><!-- CpfControl -->
 
-    <!-- 
-         <xsl:variable name="nameOne">
-         <xsl:text>^</xsl:text>
-         <xsl:value-of select="snac:normalizeString(snac:directPersnameOne(normalFinal/persname))"/>
-         <xsl:text>$</xsl:text>
-         </xsl:variable>
-         <xsl:variable name="nameTwo">
-         <xsl:text>^</xsl:text>
-         <xsl:value-of select="snac:normalizeString(snac:directPersnameTwo(normalFinal/persname))"/>
-         <xsl:text>$</xsl:text>
-         </xsl:variable>
-         <xsl:variable name="nameOneWithDate">
-         <xsl:text>^</xsl:text>
-         <xsl:value-of select="$nameOne"/>
-         <xsl:text> </xsl:text>
-         <xsl:value-of select="snac:normalizeString(snac:getDateFromPersname(normalFinal/persname))"/>
-         <xsl:text>$</xsl:text>
-         </xsl:variable>
-         <xsl:variable name="nameTwoWithDate">
-         <xsl:text>^</xsl:text>
-         <xsl:value-of select="$nameTwo"/>
-         <xsl:text> </xsl:text>
-         <xsl:value-of select="snac:normalizeString(snac:getDateFromPersname(normalFinal/persname))"/>
-         <xsl:text>$</xsl:text>
-         </xsl:variable>
-    -->
 
 
     <xsl:template name="CpfDescription">
@@ -213,11 +207,6 @@
             $counts/originationCount is only enties with source="origination" (not surprisingly).
         -->
 
-        <!--
-            Including the $debug way back in template cpfRoot takes care of both of these. $debug is
-            $normalizeStepFive which is the context . plus $counts (two count elements) plus $otherData.
-        -->
-        
         <!-- <objectXMLWrap type="otherData"> -->
         <!--     <xsl:copy-of select="$otherData"/> -->
         <!-- </objectXMLWrap> -->
@@ -253,151 +242,6 @@
         <!--     <xsl:copy-of select="$relevantBioghist"/> -->
         <!-- </objectXMLWrap> -->
         
-        <xsl:variable name="old_relevantBioghist">
-            <!--
-                This code is disabled by chaning the variable name, and never using this (old) variable. I've
-                left the code for reference. This algorithm is fraught with error, and there are only a small number of
-                records that might have entities and bioghists matched. Of that small number, it will be
-                impossible to match them correctly in a majority of cases. Consider less
-                cpf_extract/oac/csa/miligeow.c01.xml /data/source/findingAids/oac/csa/miligeow.xml where the
-                bioghist all apply to the single entity, but only one bioghist/head has the entity
-                name. Including only that single bioghist would be an error.
-            -->
-            <xsl:choose>
-                <xsl:when test="(number($counts/originationCount)=1) and (number($counts/biogHistCount)=1)">
-                    <bioghist>
-                        <xsl:copy-of select="$otherData/eac:bioghist/(* | @*)"/>
-                    </bioghist>
-                </xsl:when>
-                <xsl:when test="(number($counts/originationCount) = 1) and (number($counts/biogHistCount) &gt; 1)">
-                    <xsl:choose>
-                        <xsl:when test="normalFinal/persname">
-
-                            <xsl:variable name="nameOne">
-                                <xsl:value-of select="snac:normalizeString(snac:directPersnameOne(normalFinal/persname))"/>
-                            </xsl:variable>
-
-                            <xsl:variable name="nameTwo">
-                                <xsl:value-of select="snac:normalizeString(snac:directPersnameTwo(normalFinal/persname))"/>
-                            </xsl:variable>
-
-                            <xsl:variable name="nameOneWithDate">
-                                <xsl:value-of select="$nameOne"/>
-                                <xsl:text> </xsl:text>
-                                <xsl:value-of select="snac:normalizeString(snac:getDateFromPersname(normalFinal/persname))"/>
-                            </xsl:variable>
-
-                            <xsl:variable name="nameTwoWithDate">
-                                <xsl:value-of select="$nameTwo"/>
-                                <xsl:text> </xsl:text>
-                                <xsl:value-of select="snac:normalizeString(snac:getDateFromPersname(normalFinal/persname))"/>
-                            </xsl:variable>
-
-                            <bioghist type="oc = 1 and bhc gt 1">
-                                <!--
-                                    The root element is <entity> but we can't select the root by name, only as
-                                    ./ so this will break if the root is ever changed.
-                                    ./entity does not work.
-                                    .//entity does not work
-                                    ./ does not work to select root (returns an error), but works with @fn to get entity/@fn
-                                    .[local-name() = 'entity'] works
-                                -->
-                                <xsl:variable name="fn" select="./@fn" />
-                                <xsl:for-each select="$otherData/eac:bioghist">
-
-                                    <!-- <objectXMLWrap type="for-each $otherData/eac:bioghist"> -->
-                                    <!--     <xsl:copy-of select="."/> -->
-                                    <!-- </objectXMLWrap> -->
-
-                                    <xsl:choose>
-                                        <xsl:when test="head[(matches(snac:normalizeString(.),'[\d]{4}')) and
-                                                        (matches(snac:normalizeString(.),$nameOneWithDate)) or
-                                                        (matches(snac:normalizeString(.),$nameTwoWithDate))]">
-                                            <p type="{concat('multi one bhc: ', $counts/biogHistCount, ' oc: ', $counts/originationCount)}">
-                                                <xsl:for-each select="@*">
-                                                    <xsl:attribute name="{name()}">
-                                                        <xsl:value-of select="."/>
-                                                    </xsl:attribute>
-                                                </xsl:for-each>
-                                            </p>
-                                            <xsl:copy-of select="./*"/>
-                                            <xsl:message>
-                                                <xsl:value-of select="concat('multi: one fn: ', $fn)"/>
-                                            </xsl:message>
-                                        </xsl:when>
-                                        <xsl:when test="head[(matches(snac:normalizeString(.),$nameOne)) or
-                                                        (matches(snac:normalizeString(.),$nameTwo))]">
-                                            <p type="{concat('multi two bhc: ', $counts/biogHistCount, ' oc: ', $counts/originationCount)}">
-                                                <xsl:for-each select="@*">
-                                                    <xsl:attribute name="{name()}">
-                                                        <!--
-                                                            Why was this ./*? When running the mit data, saxon
-                                                            says: The child axis starting at an attribute node
-                                                            will never select anything Warning: SXXP0005: The
-                                                            source document is in namespace snac, but all the
-                                                            template rules match elements in no namespace.
-                                                            
-                                                            The old ./* works fine with the oac data.
-                                                        -->
-                                                        <!-- <xsl:value-of select="./*"/> -->
-                                                        <xsl:value-of select="."/>
-                                                    </xsl:attribute>
-                                                </xsl:for-each>
-                                            </p>
-                                            <xsl:copy-of select="."/>
-                                            <xsl:message>
-                                                <xsl:value-of select="concat('multi: two fn: ', $fn)"/>
-                                            </xsl:message>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <p type="{concat('multi otherwise bhc: ', $counts/biogHistCount, ' oc: ', $counts/originationCount)}">
-                                                <!-- Was bioghist/@* but that does not make sense because context is bioghist -->
-                                                <xsl:for-each select="@*">
-                                                    <xsl:attribute name="{name()}">
-                                                        <xsl:value-of select="."/>
-                                                    </xsl:attribute>
-                                                </xsl:for-each>
-                                            </p>
-                                            <xsl:copy-of select="./*"/>
-                                            <xsl:message>
-                                                <xsl:value-of select="concat('multi: otherwise fn: ', $fn)"/>
-                                            </xsl:message>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:for-each>
-                            </bioghist>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:comment>otherwise normalFinal</xsl:comment>
-                            xsl:copy-of select="normalFinal"/
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:when>
-                <xsl:when test="(number($counts/originationCount) &gt; 1) and (number($counts/biogHistCount) &gt;= 1)">
-                    <bioghist type="{concat('oc gt 1 and bhc gt=1(?) bhc: ', $counts/biogHistCount, ' oc: ', $counts/originationCount)}">
-                        <xsl:for-each select="@*">
-                            <xsl:attribute name="{name()}">
-                                <xsl:value-of select="."/>
-                            </xsl:attribute>
-                        </xsl:for-each>
-                        <xsl:copy-of select="$otherData/eac:bioghist/(*)"/>
-                    </bioghist>
-                </xsl:when>
-                <xsl:otherwise>
-                    <bioghist type="{concat('otherwise bhc: ', $counts/biogHistCount, ' oc: ', $counts/originationCount)}">
-                        <xsl:for-each select="@*">
-                            <xsl:attribute name="{name()}">
-                                <xsl:value-of select="."/>
-                            </xsl:attribute>
-                        </xsl:for-each>
-                        <!-- empty for oac/berkeley/bancroft/m88_206_cubanc.c01.xml -->
-                        <!-- <xsl:copy-of select="$otherData/bioghist/(*)"/> -->
-                        <xsl:copy-of select="$otherData/eac:bioghist"/>
-                    </bioghist>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable> <!-- old_relevantBioghist -->
-
         <xsl:message>
             <xsl:if test="normalFinal/persname and $relevantBioghist/HEAD">
                 <entity type="edb:">
@@ -446,13 +290,13 @@
             <xsl:choose>
                 <xsl:when test="@source='origination'">
                     <xsl:call-template name="descriptionOriginationEntity">
-                        <xsl:with-param name="otherData" select="$otherData"/>
+                        <xsl:with-param name="otherData" select="$otherData" tunnel="yes"/>
                         <xsl:with-param name="relevantBioghist" select="$relevantBioghist"/>
                     </xsl:call-template>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:call-template name="descriptionReferencedEntity">
-                        <xsl:with-param name="otherData" select="$otherData"/>
+                        <xsl:with-param name="otherData" select="$otherData" tunnel="yes"/>
                     </xsl:call-template>
                 </xsl:otherwise>
             </xsl:choose>
@@ -474,22 +318,29 @@
                 </xsl:choose>
 
                 <resourceRelation xmlns="urn:isbn:1-931666-33-4"
-                                  xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+                                  xlink:role="{$av_archivalResource}"
+                                  xlink:type="simple">
                     <xsl:attribute name="xlink:arcrole">
                         <xsl:choose>
                             <xsl:when test="@source='origination'">
-                                <xsl:text>http://socialarchive.iath.virginia.edu/control/term#creatorOf</xsl:text>
+                                <xsl:value-of select="$av_creatorOf"/>
+                                <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#creatorOf</xsl:text> -->
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:text>http://socialarchive.iath.virginia.edu/control/term#referencedIn</xsl:text>
+                                <xsl:value-of select="$av_referencedIn"/>
+                                <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#referencedIn</xsl:text> -->
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:attribute>
+                    <!-- call a template to create the xlink:href -->
                     <xsl:call-template name="hrefToEADInstance">
                         <xsl:with-param name="otherData" tunnel="yes" select="$otherData"/>
                     </xsl:call-template>
                     <!--
-                        Fixed to stop normalize-space() from breaking on multiple unittitle element.
+                        Sep 24 2014 Rewrite unittitle completely as template parse_unittitle to deal with any
+                        child text/node and unitdate.
+                        
+                        Old: Fixed to stop normalize-space() from breaking on multiple unittitle elements.
                         
                         Same code as citation (cite_string) below.
                         
@@ -498,15 +349,59 @@
                         situation. Must use text() for the title, and then // to get unitdate.
 
                         /data/source/findingAids/ude/full_ead/mss0489.xml
+                        
+                        This code was fixed to deal with child elements in unittitle, which broke with the /text() version of the code below. 
+                        
+                        xlf /data/source/findingAids/oac/chs/ms_3598.xml
+                        less cpf_qa/oac/chs/ms_3598.c01.xml
                     -->
                     <relationEntry>
-                        <xsl:variable name="temp">
-                            <xsl:value-of select="$otherData/did/unittitle/text()" separator=" "/>
-                            <xsl:for-each select="$otherData/did//unitdate"> 
-                                <xsl:value-of select="concat(', ', .)"/>
-                            </xsl:for-each>
+                        <xsl:variable name="parsed_unit_title">
+                            <xsl:call-template name="parse_unittitle">
+                                <!--
+                                    param name="otherData" tunneled from  tpt_process calling template CpfRoot in eadToCpf.xsl
+                                -->
+                            </xsl:call-template>
                         </xsl:variable>
-                        <xsl:value-of select="snac:removeFinalComma(snac:fixSpaceComma(normalize-space($temp)))"/>
+
+                        <xsl:variable name="repo_info">
+                            <xsl:choose>
+                                <xsl:when test="$otherData/repo_info[@missing = '1']">
+                                    <xsl:text>Repository Unknown</xsl:text>
+                                    <xsl:message>
+                                        <xsl:text>Repository unknown for file: </xsl:text>
+                                        <xsl:value-of select="$otherData/eadPath"/>
+                                    </xsl:message>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="$otherData/repo_info/normal"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+
+                        <!--
+                            There are rare instances with no unittitle, which results in an empty $parsed_unit_title. We
+                            really don't want relationEntry to be empty, so if there's no unittitle, try to
+                            use <repository>. <citation> always uses repo_info, although it surrounds it with
+                            ( and ). 
+                        -->
+                        <xsl:choose>
+                            <xsl:when test="string-length($parsed_unit_title) &gt; 0">
+                                <!-- <xsl:message> -->
+                                <!--     <xsl:text>using parsed_unit_title:</xsl:text> -->
+                                <!--     <xsl:value-of select="$parsed_unit_title"/> -->
+                                <!-- </xsl:message> -->
+                                <xsl:value-of select="$parsed_unit_title"/>
+                            </xsl:when>
+                            <xsl:when test="string-length($repo_info) > 3">
+                                <xsl:value-of select="$repo_info"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:message>
+                                    <xsl:text>Warning: missing relationEntry value</xsl:text>
+                                </xsl:message>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </relationEntry>
                     <objectXMLWrap>
                         <did xmlns="urn:isbn:1-931666-22-9">
@@ -540,10 +435,38 @@
         <xsl:variable name="short_name" select="replace(@fn, '/data/source/', '')"/>
         <xsl:variable name="url" select="$file2url/container/file[text() = $short_name]/@url"/>
         <xsl:attribute name="xlink:href">
-            <xsl:value-of select="replace(normalize-space($url), ' ', '_')"/>
+            <!--
+                Changing ' ' to '_' is an odd thing to do in a URL. It broke a URL, and since there's no clear
+                reason what it was supposed to fix, I'm changing it to '%20' which is more URL-ish.
+                
+                /data/source/findingAids/afl-ufl/ufms80gm.xml
+                
+                Good:
+                http://www.library.ufl.edu/spec/manuscript/guides/Locke%20Papers.htm
+
+                Broken:
+                http://www.library.ufl.edu/spec/manuscript/guides/Locke_Papers.htm
+            -->
+            <!-- <xsl:value-of select="replace(normalize-space($url), ' ', '_')"/> -->
+            <xsl:value-of select="replace(normalize-space($url), ' ', '%20')"/>
             <xsl:if test="string-length($url) = 0">
             <xsl:message>
-                <xsl:text>Finding Aid Url of contributing respository needs to be determined!</xsl:text>
+                <!-- <xsl:text>Finding Aid Url of contributing respository needs to be determined!</xsl:text> -->
+                <!-- <xsl:text>warning: url: Finding Aid URL TBD</xsl:text> -->
+                <!--
+                    Because this is printing the log message deep in this code instead of at the top, and
+                    because XSLT lacks global variables or any other way to pass back out-of-band return
+                    values, this would have to be completely restructured to only log this one time per input
+                    file.
+                    
+                    So, it is easier to add @fn and use "sort -u" to make TBD urls unique so that we can count
+                    them in the log files. Counting things in log files is important.
+                    
+                    grep tbdfname: qa.log | sort -u | wc -l
+                -->
+                <xsl:value-of select="concat('warning: url: Finding Aid URL TBD tbdfname: ', @fn, $cr)"/>
+                <xsl:value-of select="concat('short_name: ', $short_name, $cr)"/>
+                <xsl:copy-of select="$file2url"/>
             </xsl:message>
             </xsl:if>
         </xsl:attribute>
@@ -553,29 +476,51 @@
         <xsl:param name="otherData" tunnel="yes"/>
         <xsl:param name="entitiesForCPFRelations" tunnel="yes"/>
         <xsl:variable name="recordId" select="@recordId"/>
+        <xsl:variable name="ent_normalFinal" select="normalFinal"/> <!-- entity normal final -->
+
         <xsl:for-each select="$entitiesForCPFRelations/entity[not(@recordId = $recordId)]">
             <cpfRelation xmlns="urn:isbn:1-931666-33-4" xlink:type="simple">
                 <xsl:attribute name="xlink:role">
                     <xsl:choose>
                         <xsl:when test="normalFinal/corpname">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#CorporateBody</xsl:text>
+                            <xsl:value-of select="$av_CorporateBody"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#CorporateBody</xsl:text> -->
                         </xsl:when>
                         <xsl:when test="normalFinal/persname">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Person</xsl:text>
+                            <xsl:value-of select="$av_Person"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Person</xsl:text> -->
                         </xsl:when>
                         <xsl:when test="normalFinal/famname">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Family</xsl:text>
+                            <xsl:value-of select="$av_Family"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Family</xsl:text> -->
                         </xsl:when>
                     </xsl:choose>
                 </xsl:attribute>
                 <xsl:attribute name="xlink:arcrole">
+                    <!-- <xsl:message> -->
+                    <!--     <xsl:value-of select="concat($recordId, ' ', $ent_normalFinal,' creates cpfRel for ', @recordId, ' ', normalFinal, $cr)"/> -->
+                    <!--     <xsl:value-of select="concat('cpfRel is ', -->
+                    <!--                           @correspondent='yes', -->
+                    <!--                           ' I am ', -->
+                    <!--                           $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes', -->
+                    <!--                           $cr)"/> -->
+                    <!-- </xsl:message> -->
                     <xsl:choose>
-                        <!-- snac:associatedWith, snac:correspondedWith -->
+                        <!--
+                            snac:associatedWith, snac:correspondedWith 
+                            
+                            In this loop, $recordId is the .cxx. If either .c01 or .r00x is a correspondent
+                            then both are correspondedWith. Note that .cxx will never be a correspondent, so
+                            we don't test for that here. See template relationsReferenced.
+                        -->
+                        <!-- <xsl:when test="@correspondent='yes' or $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes'"> -->
                         <xsl:when test="@correspondent='yes'">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#correspondedWith</xsl:text>
+                            <xsl:value-of select="$av_correspondedWith"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#correspondedWith</xsl:text> -->
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#associatedWith</xsl:text>
+                            <xsl:value-of select="$av_associatedWith"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#associatedWith</xsl:text> -->
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
@@ -584,19 +529,20 @@
                 </relationEntry>
                 <descriptiveNote>
                     <p>
-                        <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">
+                        <span localType="{$av_extractRecordId}">
                             <xsl:value-of select="@recordId"/>
                         </span>
                     </p>
                 </descriptiveNote>
             </cpfRelation>
         </xsl:for-each>
-    </xsl:template>
-
+    </xsl:template> <!-- relationsOrigination -->
+    
     <xsl:template name="relationsReferenced">
         <xsl:param name="otherData" tunnel="yes"/>
         <xsl:param name="entitiesForCPFRelations" tunnel="yes"/>
         <xsl:variable name="recordId" select="@recordId"/>
+        <xsl:variable name="ent_normalFinal" select="normalFinal"/> <!-- entity normal final -->
 
         <xsl:for-each select="$entitiesForCPFRelations/entity[@source='origination']">
             <cpfRelation xmlns="urn:isbn:1-931666-33-4" xlink:type="simple">
@@ -604,24 +550,47 @@
 
                     <xsl:choose>
                         <xsl:when test="normalFinal/corpname">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#CorporateBody</xsl:text>
+                            <xsl:value-of select="$av_CorporateBody"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#CorporateBody</xsl:text> -->
                         </xsl:when>
                         <xsl:when test="normalFinal/persname">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Person</xsl:text>
+                            <xsl:value-of select="$av_Person"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Person</xsl:text> -->
                         </xsl:when>
                         <xsl:when test="normalFinal/famname">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Family</xsl:text>
+                            <xsl:value-of select="$av_Family"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Family</xsl:text> -->
                         </xsl:when>
                     </xsl:choose>
                 </xsl:attribute>
                 <xsl:attribute name="xlink:arcrole">
+                    <!-- <xsl:message> -->
+                    <!--     <xsl:value-of select="concat($recordId, ' ', $ent_normalFinal,' creates cpfRel for ', @recordId, ' ', normalFinal, $cr)"/> -->
+                    <!--     <xsl:value-of select="concat('cpfRel is ', -->
+                    <!--                           @correspondent='yes', -->
+                    <!--                           ' I am ', -->
+                    <!--                           $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes', -->
+                    <!--                           $cr)"/> -->
+                    <!-- </xsl:message> -->
+
                     <xsl:choose>
-                        <!-- snac:associatedWith, snac:correspondedWith -->
-                        <xsl:when test="@correspondent='yes'">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#correspondedWith</xsl:text>
+                        <!--
+                            snac:associatedWith, snac:correspondedWith
+
+                            In this loop, $recordId is the .rxxx. If either .c01 or .r00x is a correspondent
+                            then both are correspondedWith. See template relationsOrigination.
+                            
+                            Note that .cxx will never be a correspondent, and so I'm fairly sure that testing
+                            @correspondent will never be true, and thus was (is?) a bug.
+                        -->
+                        <!-- <xsl:when test="@correspondent='yes'"> -->
+                        <xsl:when test="$entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes'">
+                            <xsl:value-of select="$av_correspondedWith"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#correspondedWith</xsl:text> -->
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#associatedWith</xsl:text>
+                            <xsl:value-of select="$av_associatedWith"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#associatedWith</xsl:text> -->
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
@@ -630,17 +599,17 @@
                 </relationEntry>
                 <descriptiveNote>
                     <p>
-                        <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">
+                        <span localType="{$av_extractRecordId}">
                             <xsl:value-of select="@recordId"/>
                         </span>
                     </p>
                 </descriptiveNote>
             </cpfRelation>
         </xsl:for-each>
-    </xsl:template>
+    </xsl:template> <!-- relationsReferenced -->
 
     <xsl:template name="descriptionOriginationEntity">
-        <xsl:param name="otherData"/>
+        <xsl:param name="otherData" tunnel="yes"/>
         <xsl:param name="relevantBioghist"/>
         <xsl:if
             test="activeDate | 
@@ -654,15 +623,21 @@
 
             <description xmlns="urn:isbn:1-931666-33-4">
                 <xsl:call-template name="existDates">
-                    <xsl:with-param name="otherData" select="$otherData"/>
+                    <xsl:with-param name="otherData" select="$otherData" tunnel="yes"/>
                 </xsl:call-template>
 
-                <xsl:for-each select="function | $otherData/function">
+                <!--
+                    Oct 6 2014 added [string-length() &gt; 0] to fix empty functions, first discovered in NWDA.
+                    
+                    xlf /data/source/findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVSIEmss_22.xml
+                    less cpf_qa/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVSIEmss_22.c01.xml
+                -->
+                <xsl:for-each select="function | $otherData/function[string-length() &gt; 0]">
                     <!-- FUNCTION -->
                     <function xmlns="urn:isbn:1-931666-33-4">
                         <xsl:if test="@source='roleAttribute' or @source='nameString'">
                             <xsl:attribute name="localType">
-                                <xsl:text>http://socialarchive.iath.virginia.edu/control/term#DerivedFromRole</xsl:text>
+                                <xsl:value-of select="$av_derivedFromRole"/>
                             </xsl:attribute>
                         </xsl:if>
                         <term>
@@ -671,12 +646,18 @@
                     </function>
                 </xsl:for-each>
 
-                <xsl:for-each select="occupation | $otherData/occupation">
+                <!--
+                    Oct 6 2014 Added [string-length() &gt; 0] to fix empty occupation.
+                    
+                    xlf /data/source/findingAids/nwda/university_of_alaska_fairbanks/AkUV5_59.xml
+                    less cpf_qa/nwda/university_of_alaska_fairbanks/AkUV5_59.c01.xml
+                -->
+                <xsl:for-each select="occupation | $otherData/occupation[string-length() &gt; 0]">
                     <!-- OCCUPATION -->
                     <occupation xmlns="urn:isbn:1-931666-33-4">
                         <xsl:if test="@source='roleAttribute' or @source='nameString'">
                             <xsl:attribute name="localType">
-                                <xsl:text>http://socialarchive.iath.virginia.edu/control/term#DerivedFromRole</xsl:text>
+                                <xsl:value-of select="$av_derivedFromRole"/>
                             </xsl:attribute>
                         </xsl:if>
                         <term>
@@ -685,15 +666,21 @@
                     </occupation>
                 </xsl:for-each>
 
-                <xsl:for-each select="$otherData/subject">
+                <!--
+                    Oct 6 2014 Added [string-length() &gt; 0] to fix empty subject.
+                    
+                    xlf /data/source/findingAids/nwda/lewis_and_clark_college/OLPb039PSA.xml
+                    less cpf_qa/nwda/lewis_and_clark_college/OLPb039PSA.c01.xml
+                -->
+                <xsl:for-each select="$otherData/subject[string-length() &gt; 0]">
                     <!-- SUBJECT -->
-                    <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                    <localDescription localType="{$av_associatedSubject}">
                         <term>
                             <xsl:value-of select="."/>
                         </term>
                     </localDescription>
                 </xsl:for-each>
-
+                
                 <xsl:for-each select="$otherData/geognameGroup">
                     <!--
                         PLACE, geonames, geonames-cheshire
@@ -702,7 +689,7 @@
                         less cpf_qa/ahub/soas/196.c01.xml
                         less cpf_qa/ude/full_ead/mss0489.c01.xml
                     -->
-                    <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                    <place localType="{$av_associatedPlace}">
                         <xsl:message>
                             <xsl:text>geog1: geogx: </xsl:text>
                             <xsl:copy-of select="normalized"/>
@@ -744,7 +731,7 @@
 
                 <xsl:for-each select="$relevantBioghist/bioghist">
                     <xsl:call-template name="tpt_bioghist_parse">
-                        <xsl:with-param name="otherData" select="$otherData"/>
+                        <xsl:with-param name="otherData" select="$otherData" tunnel="yes"/>
                     </xsl:call-template>
                 </xsl:for-each>
             </description>
@@ -761,12 +748,12 @@
             <description xmlns="urn:isbn:1-931666-33-4">
 
                 <xsl:call-template name="existDates">
-                    <xsl:with-param name="otherData" select="$otherData"/>
+                    <xsl:with-param name="otherData" select="$otherData" tunnel="yes"/>
                 </xsl:call-template>
 
                 <xsl:for-each select="function ">
                     <!-- FUNCTION -->
-                    <function localType="http://socialarchive.iath.virginia.edu/control/term#DerivedFromRole"
+                    <function localType="{$av_derivedFromRole}"
                               xmlns="urn:isbn:1-931666-33-4">
                         <term>
                             <xsl:value-of select="."/>
@@ -776,7 +763,7 @@
 
                 <xsl:for-each select="occupation">
                     <!-- OCCUPATION -->
-                    <occupation localType="http://socialarchive.iath.virginia.edu/control/term#DerivedFromRole"
+                    <occupation localType="{$av_derivedFromRole}"
                                 xmlns="urn:isbn:1-931666-33-4">
                         <term>
                             <xsl:value-of select="."/>
@@ -785,11 +772,10 @@
                 </xsl:for-each>
             </description>
         </xsl:if>
-
     </xsl:template>
 
     <xsl:template name="existDates">
-        <xsl:param name="otherData"/>
+        <xsl:param name="otherData" tunnel="yes"/>
 
         <!-- existDates -->
         <xsl:choose>
@@ -822,7 +808,7 @@
                     </xsl:when>
                     <xsl:when test="count(activeDate)=1 or (count(activeDate)=2 and activeDate[2] > $this_year)">
                         <existDates xmlns="urn:isbn:1-931666-33-4">
-                            <date localType="http://socialarchive.iath.virginia.edu/control/term#Active" standardDate="{activeDate[1]}"
+                            <date localType="{$av_active}" standardDate="{activeDate[1]}"
                                   xmlns="urn:isbn:1-931666-33-4">
                                 <xsl:text>active </xsl:text>
                                 <xsl:value-of select="activeDate[1]"/>
@@ -832,12 +818,12 @@
                     <xsl:when test="count(activeDate)=2">
                         <existDates xmlns="urn:isbn:1-931666-33-4">
                             <dateRange xmlns="urn:isbn:1-931666-33-4">
-                                <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Active" standardDate="{activeDate[1]}"
+                                <fromDate localType="{$av_active}" standardDate="{activeDate[1]}"
                                           xmlns="urn:isbn:1-931666-33-4">
                                     <xsl:text>active </xsl:text>
                                     <xsl:value-of select="activeDate[1]"/>
                                 </fromDate>
-                                <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Active" standardDate="{activeDate[2]}"
+                                <toDate localType="{$av_active}" standardDate="{activeDate[2]}"
                                         xmlns="urn:isbn:1-931666-33-4">
                                     <xsl:text>active </xsl:text>
                                     <xsl:value-of select="activeDate[2]"/>
@@ -857,7 +843,7 @@
     -->
 
     <xsl:template name="tpt_bioghist_parse"  xmlns="urn:isbn:1-931666-33-4">
-        <xsl:param name="otherData"/>
+        <xsl:param name="otherData" tunnel="yes"/>
         <biogHist>
             <!--
                 Are we copying the attributes mostly for debugging? Copy the attributes from bioghist (which happens to be the context).
@@ -868,17 +854,12 @@
             -->
             <xsl:copy-of select="@*"/>
 
-            <!-- Older code that wasn't processing head, or something. We now have a template for head tags. -->
-            <!-- <xsl:apply-templates select="*[not(self::head)]" mode="mode_bioghist"/> -->
-            <!-- <xsl:call-template name="msg"> -->
-            <!--     <xsl:with-param name="arg" select="*"/> -->
-            <!--     <xsl:with-param name="label" select="'star'"/> -->
-            <!-- </xsl:call-template> -->
-
             <xsl:apply-templates select="node()" mode="mode_bioghist"/>
 
             <!--
-                cite_string aka citation. unittitle with child or sibling unitdate. Same code as relationEntry above.
+                sep 24 2014 Use new template parse_unittitle, but citation needs a trailing comma, so retain that code.
+                
+                Old: cite_string aka citation. unittitle with child or sibling unitdate. Same code as relationEntry above.
 
                 Fixed to stop normalize-space() from breaking on multiple unittitle element.
                 
@@ -887,50 +868,71 @@
                 (missing space, and so on).
             -->
             <xsl:variable name="cite_string">
-                <xsl:text>From the guide to the </xsl:text>
                 <xsl:variable name="temp">
-                    <xsl:value-of select="$otherData/did/unittitle/text()" separator=" "/>
-                    <xsl:for-each select="$otherData/did//unitdate"> 
-                        <xsl:value-of select="concat(', ', .)"/>
-                    </xsl:for-each>
+                    <!--
+                        Previous unititle code was frail. Update and replace, especially since unittitle is
+                        used in two places (here and in relationEntry).
+                    -->
+                    <xsl:call-template name="parse_unittitle">
+                        <!--
+                            param name="otherData" tunneled from  tpt_process calling template CpfRoot in eadToCpf.xsl
+                        -->
+                    </xsl:call-template>
                 </xsl:variable>
-                <xsl:value-of select="normalize-space($temp)"/>
-                <xsl:if test="not(ends-with($temp,','))">
-                    <xsl:text>,</xsl:text>
-                </xsl:if>
-                <xsl:text> (</xsl:text>
+
+                <!--
+                    See eadToCpf.xsl "Save repository info"
+                    
+                    Some records have missing repo info, and we don't want empty () at the end of the
+                    citation.
+                -->
+                <xsl:variable name="repo_info">
+                    <xsl:choose>
+                        <xsl:when test="$otherData/repo_info[@missing = '1']">
+                            <xsl:text>Repository Unknown</xsl:text>
+                            <xsl:message>
+                                <xsl:text>Repository unknown for file: </xsl:text>
+                                <xsl:value-of select="$otherData/eadPath"/>
+                            </xsl:message>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$otherData/repo_info/normal"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <!-- 
+                     Only do the "From the guide..." if we have a unittitle. 
+                     
+                     Possible formats (trailing commas stripped later, unittitle includes unitdate when
+                     available):
+
+                     unittitle-text, (repository-text)
+                     unittitle-text
+                     repository-text
+                -->
                 <xsl:choose>
-                    <xsl:when test="not($otherData/did/repository)">
-                        <xsl:text>Repository Unknown</xsl:text>
-                        <xsl:message>
-                            <xsl:text>Repository Unknown: </xsl:text>
-                            <xsl:value-of select="$otherData/eadPath"/>
-                        </xsl:message>
-                    </xsl:when>
-                    <xsl:when test="$otherData/did/repository[not(corpname)]">
-                        <xsl:variable name="temp">
-                            <xsl:value-of select="$otherData/did/repository" separator=", and "/>
-                        </xsl:variable>
+                    <xsl:when test="string-length($temp) &gt; 0">
+                        <xsl:text>From the guide to the </xsl:text>
                         <xsl:value-of select="normalize-space($temp)"/>
+                        <xsl:if test="string-length($repo_info) > 3">
+                            <xsl:value-of select="concat(', (',$repo_info, ')')"/>
+                        </xsl:if>
                     </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:for-each select="$otherData/did/repository/corpname">
-                            <xsl:if
-                                test="preceding-sibling::corpname and not(ends-with(normalize-space(preceding-sibling::corpname[1]),','))">
-                                <xsl:text>, </xsl:text>
-                            </xsl:if>
-                            <xsl:value-of select="normalize-space(.)"/>
-                        </xsl:for-each>
-                    </xsl:otherwise>
+                    <xsl:when test="string-length($repo_info) > 3">
+                        <xsl:value-of select="$repo_info"/>
+                    </xsl:when>
                 </xsl:choose>
-                <xsl:text>)</xsl:text>
             </xsl:variable> <!-- end cite_string -->
+
             <!--
                 The string can end up with an extra space before comma: "...1924-1932 , (School..."
                 Remove it here with a simple regex.
+                
+                Remove trailing comma too. It doesn't look like snac:removeFinalComma() can deal with
+                whitespace following the final comma, and this regex does that.
             -->
             <citation>
-                <xsl:value-of select="replace(snac:removeDoubleComma(normalize-space($cite_string)), ' ,', ',')"/>
+                <xsl:value-of select="replace(replace(snac:removeDoubleComma(normalize-space($cite_string)), ' ,', ','), ',\s*$', '')"/>
             </citation>
         </biogHist>
     </xsl:template> <!-- tpt_bioghist_parse -->
@@ -951,11 +953,12 @@
         bioghist/head becomes bioghist/p/span@localType="ead/head"
     -->
     <xsl:template mode="mode_bioghist" match="head"  xmlns="urn:isbn:1-931666-33-4">
-        <p>
-            <span localType="{$av_head}">
-                <xsl:value-of select="."/>
-            </span>
-        </p>
+        <!-- Oct 22 2014 new policy via email, do nothing. -->
+        <!-- <p> -->
+        <!--     <span localType="{$av_head}"> -->
+        <!--         <xsl:value-of select="."/> -->
+        <!--     </span> -->
+        <!-- </p> -->
     </xsl:template>
 
     <!--
@@ -970,6 +973,7 @@
     </xsl:template>
 
     <xsl:template mode="outline" match="head"  xmlns="urn:isbn:1-931666-33-4">
+        Oct 22 2014 new policy via email, do nothing.
         <span localType="{$av_head}">
             <xsl:value-of select="."/>
         </span>
@@ -1076,12 +1080,19 @@
                 <!--
                     Aggressively flatten any cases not above.
                     
-                    Prior to disableing p/old_p above. this otherwise processes text() nodes, so we preserve
+                    Prior to disabling p/old_p above. this otherwise processes text() nodes, so we preserve
                     this functionality.  Maybe other inline elements to process? Maybe apply-temlates with
                     another mode.
+                    
+                    This changes text like "the <emph render="italic">Soledad</emph>, a Mexican brig" to "the Soledad, a Mexican brig".
+                    
+                    Without the normalize-space() and replace() there would be a space before the comma, and two spaces before Soledad.
                 -->
-                <p>
+                <xsl:variable name="temp">
                     <xsl:value-of select="*|node()" separator=" "/>
+                </xsl:variable>
+                <p>
+                    <xsl:value-of select="normalize-space(replace($temp, ' ,', ','))"/>
                 </p>
                 <!-- <p> -->
                 <!--     <xsl:apply-templates select="node()" mode="mode_bioghist"/> -->
@@ -1091,7 +1102,8 @@
     </xsl:template>
 
     <!--
-        emph anywhere in biogHist is transformed
+        emph anywhere in biogHist is transformed. Well, not really, since <emph> inside <p> is simply thrown
+        away in some other template.
     -->
     <xsl:template match="emph" mode="mode_bioghist" xmlns="urn:isbn:1-931666-33-4">
         <xsl:variable name="rstyle">
@@ -1227,9 +1239,6 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:variable>
-                            <!-- <debug> -->
-                            <!--     <xsl:copy-of select="$temp"/> -->
-                            <!-- </debug> -->
                             <xsl:choose>
                                 <xsl:when test="position() = 1 or name($temp/*[1]) = 'level'">
                                     <xsl:for-each select="$temp">
@@ -1764,9 +1773,6 @@
             <xsl:when test="local-name() = 'note'">
                 <xsl:choose>
                     <xsl:when test="parent::node()[name() = 'p']">
-                        <!-- <debug> -->
-                        <!--     <xsl:copy-of select="parent::node()/name()"/> -->
-                        <!-- </debug> -->
                         <span localType="{$av_note}">
                             <xsl:variable name="temp">
                                 <xsl:apply-templates mode="copy-normalize-space" select="*"/>
@@ -1775,7 +1781,7 @@
                         </span>
                     </xsl:when>
                     <xsl:otherwise>
-                        <p> <!-- debug with xml:id="otherwise" -->
+                        <p>
                             <span localType="{$av_note}">
                                 <xsl:variable name="temp">
                                     <xsl:apply-templates mode="copy-normalize-space" select="*"/>
@@ -1950,15 +1956,53 @@
         </xsl:choose>
     </xsl:template>
 
-    <!-- 
-         Debugging only. Added because the other rules were not catching <list><head/><item/>...</list>
-    -->
-    <!-- <xsl:template match="item" mode="mode_bioghist"> -->
-    <!--     <xsl:apply-templates mode="simple" select="item"/> -->
-        <!-- Catchall for mode_biodhist. Does each mode need a catchall? -->
-        <!-- <catchall_3> -->
-        <!--     <xsl:copy-of select="."/> -->
-        <!-- </catchall_3> -->
-    <!-- </xsl:template> -->
+    <xsl:template name="parse_unittitle">
+        <xsl:param name="otherData" tunnel="yes"/>
+        <!--
+            param name="otherData" tunneled from  tpt_process calling template CpfRoot in eadToCpf.xsl
+        -->
+
+        <xsl:variable name="date">
+            <xsl:for-each select="$otherData/did//unitdate">
+                <xsl:if test="not(position() = 1)">
+                    <xsl:value-of select="', '"/>
+                </xsl:if>
+                <xsl:value-of select="normalize-space(.)"/>
+            </xsl:for-each>
+        </xsl:variable>
+
+        <!--
+            First, build a sequence of simply normalized unititle values, with no child elements, just text.
+        -->
+        <xsl:variable name="norm_title">
+            <xsl:for-each select="$otherData/did/unittitle/(*|node())">
+                <xsl:if test="local-name() != 'unitdate'">
+                    <unittitle>
+                        <xsl:value-of select="normalize-space(.)"/>
+                    </unittitle>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+
+        <!--
+            Second, concat into a serialized string, but ignore exact duplicate text. This de-duplicates titles.
+        -->
+        <xsl:variable name="no_dup_title">
+            <xsl:for-each select="$norm_title/unittitle[not(following::text()=text())]">
+                <xsl:if test="not(position() = 1)">
+                    <xsl:value-of select="', '"/>
+                </xsl:if>
+                <xsl:value-of select="normalize-space(.)"/>
+            </xsl:for-each>
+        </xsl:variable>
+
+        <xsl:if test="$date">
+            <xsl:value-of select="snac:removeFinalComma(
+                                  snac:fixSpaceComma(
+                                  snac:removeDoubleComma(
+                                  normalize-space(
+                                  concat($no_dup_title, ', ', $date)))))"/>
+        </xsl:if>
+    </xsl:template> <!-- end of parse_unittitle -->
 
 </xsl:stylesheet>

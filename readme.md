@@ -159,8 +159,8 @@ with sort -u, and process with build_geo_xml.pl. This results in a file of uniqu
 which builds the geonames data file.
 
     ./extract_all.pl > ext.log 2>&1 &    
-    grep -Po "<normalized>.+<\/normalized>" logs/*.log > geoname_files/tmp.txt
-    sort -fu geoname_files/tmp.xt > geoname_files/all.txt
+    grep -Po "<normalized>.+<\/normalized>" logs/*.log > geonames_files/tmp.txt
+    sort -fu geonames_files/tmp.txt > geonames_files/all.txt
     ./build_geo_xml.pl geonames_files/all.txt > geonames_files/all.xml
 
     snac_transform.sh geonames_files/all.xml geo.xsl > geonames_files/geo_all.xml

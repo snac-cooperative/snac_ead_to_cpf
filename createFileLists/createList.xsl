@@ -10,7 +10,7 @@
         It is best to use run_all.pl to do all the EAD repositories in /data/source/findingAids in a single
         pass. 
         
-        ./run_all.pl > ra.log 2>&1 &
+        ./run_all.pl > rax.log 2>&1 &
         
         If you decide to run this xsl script manually, the script takes an input file called something like
         xxx_faList.txt which is generated using the following "find" terminal command.

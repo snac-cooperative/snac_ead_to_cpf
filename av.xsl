@@ -39,7 +39,14 @@
     <xsl:variable name="av_died" select="'http://socialarchive.iath.virginia.edu/control/term#Death'"/>
     <xsl:variable name="av_associatedSubject" select="'http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject'"/>
     <xsl:variable name="av_associatedPlace" select="'http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace'"/>
+
+    <!--
+        Oct 10 2014 I just noticed the missing "ed" in the variable name "extract" instead of "extracted". Not
+        a problem as long as it used the same way everywhere. XSLT will die with an undeclared variable error
+        if someone misspells it.
+    -->
     <xsl:variable name="av_extractRecordId" select="'http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId'"/>
+
     <xsl:variable name="av_Leader06" select="'http://socialarchive.iath.virginia.edu/control/term#Leader06'"/>
     <xsl:variable name="av_Leader07" select="'http://socialarchive.iath.virginia.edu/control/term#Leader07'"/>
     <xsl:variable name="av_Leader08" select="'http://socialarchive.iath.virginia.edu/control/term#Leader08'"/>
@@ -71,8 +78,10 @@
     <!-- Used for @href, found in extref, maybe other elements -->
     <xsl:variable name="av_href" select="'http://socialarchive.iath.virginia.edu/control/term#ead/href'"/>
 
-
-    <!-- New for alternativeName so Ray and Yiming know which name to match. Internal use only. -->
+    <!--
+        As of Oct 10 2014 not used.
+        New for alternativeName so Ray and Yiming know which name to match. Internal use only.
+    -->
     <xsl:variable name="av_match" select="'http://socialarchive.iath.virginia.edu/control/term#Matchtarget'"/>
 
 </xsl:stylesheet>

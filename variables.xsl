@@ -72,32 +72,10 @@
 
     <xsl:variable name="sourceList">
         <!--
-            Finding aid URLs added Mar 26 2014 as comments. 
-            Updated jan 15 2014 via email
+            Dec 11 2014 See up to date info in readme_cpf.txt and todo.txt.
             
-            No files:
-            anfra - Archives nationales (France)
-            
-            Awaiting complete/updated data:
-            ahub - ArchivesHub (UK)
-            lds - Church of Latter Day Saints Archives (No algorithm, incorrect url in <extptr>)
-            
-            
-            No finding aids online:
-            howard - Howard University (No finding aids found)
-            
-            
-            URLs cannot be created from current records:
-            fsga - Freer Sackler Gallery Archives, Smithsonian Institution (Can't associate eadid or any ead data with URL id values.)
-            meas - Maine Archives Search (Some URLs have dot (.) some have space (%20), pattern is unclear.)
-            nyu - New York University (106 bad/broken out of 3668 total records. See nyu section in variables.xsl for details.)
-            sia - Smithsonian Institution Archives (We have no way to convert eadid to sirsi_arc values)
-            unc - University of North Carolina, Chapel Hill (Can't build urls with ead data, confirmed, see notes)
-            une - University of Nebraska (Can't associate eadid with finding aid url file name)
-            
-            
-            Superceded:
-            ufl - University of Florida (Now part of alf)
+            The actual URL code is in fix_url.xsl Building URLs on the fly was slowing down CPF extraction,
+            therefore URL creation is now down as a batch job before CPF extraction.
         -->
         <source>
             <sourceCode>aao</sourceCode>
@@ -369,6 +347,12 @@
             <identifier/>
         </source>
         <source>
+            <sourceCode>ccfr</sourceCode>
+            <sourceName>Catalogue Collectif de France</sourceName>
+            <url/>
+            <identifier/>
+        </source>
+        <source>
             <sourceCode>cjh</sourceCode>
             <sourceName>Center for Jewish History</sourceName>
             <!--
@@ -601,6 +585,8 @@ http://library.duke.edu/rubenstein/findingaids/jarrattpuryear/
             <sourceCode>fsga</sourceCode>
             <sourceName>Freer Sackler Gallery Archives (Smithsonian Institution)</sourceName>
             <!--
+                Update July 16 2014 See fsga_e2u.xml
+
                 # Apparently not possible to find the "real" finding aid without looking at the href in the
                 # title="Finding Aid" link. Even the siris_bib id links to an incomplete summary of the real finding aid.
                 
@@ -1680,26 +1666,27 @@ cmd: wget \-\-spider ""
             <sourceCode>ude</sourceCode>
             <sourceName>University of Delaware</sourceName>
             <!--
+                # Interesting index.htm
+                http://www.lib.udel.edu/ud/spec/findaids/bazelon/index.htm
+                
+                # 404
+                http://www.lib.udel.edu/ud/spec/findaids/html/mss0272.html
 
-# Interesting index.htm
-http://www.lib.udel.edu/ud/spec/findaids/bazelon/index.htm
-
-/data/source/findingAids/ude/minimal_ead/mss0272.xml
-
-<eadid countrycode="us" mainagencycode="deu" identifier="mss0272.xml">mss0272.xml</eadid>
-
-Finding aid for W. D. Snodgrass correspondence with Daniela Gioseffi
-
-# works, via google and the browsing page http://www.lib.udel.edu/ud/spec/findaids/index.htm
-http://www.lib.udel.edu/ud/spec/findaids/snodgios.htm
-
-# no
-http://www.lib.udel.edu/ud/spec/findaids/html/mss0272.html
-
-# no
-http://www.lib.udel.edu/ud/spec/findaids/xml/mss0272.xml
-
-
+                /data/source/findingAids/ude/minimal_ead/mss0272.xml
+                
+                <eadid countrycode="us" mainagencycode="deu" identifier="mss0272.xml">mss0272.xml</eadid>
+                
+                Finding aid for W. D. Snodgrass correspondence with Daniela Gioseffi
+                
+                # works, via google and the browsing page http://www.lib.udel.edu/ud/spec/findaids/index.htm
+                http://www.lib.udel.edu/ud/spec/findaids/snodgios.htm
+                
+                # no
+                http://www.lib.udel.edu/ud/spec/findaids/html/mss0272.html
+                
+                # no
+                http://www.lib.udel.edu/ud/spec/findaids/xml/mss0272.xml
+                
                 /data/source/findingAids/ude/minimal_ead/mss0272.xml
                 
                 /data/source/findingAids/ude/full_ead/mss0099_0576.xml
@@ -1874,44 +1861,10 @@ http://www.lib.udel.edu/ud/spec/findaids/xml/mss0272.xml
             <identifier/>
         </source>
         <source>
-            <sourceCode>une</sourceCode>
+            <sourceCode>unl</sourceCode>
             <sourceName>University of Nebraska</sourceName>
             <!-- 
-                 # Cannot associate our file name with a URL. Filenames appear to have been randomly
-                 # munged. Never did find sandoz-ms80-reelMS0031-unl.xml. No relation between eadid@identifier
-                 # and ead URL.
-                 
-                 /data/source/findingAids/une/pejsa-cz-ms273-unl.xml
-                 
-                 <eadid countrycode="us" mainagencycode="NbU" identifier="b40857955c">b40857955c</eadid>
-                 
-                 http://archivespec.unl.edu/findingaids/MS273-pejsa-cz-unl.html
-                 
-                 /data/source/findingAids/une/boucher-rg05-12-03-unl.xml
-                 
-                 <eadid countrycode="us" mainagencycode="NbU" identifier="b39378378.3">b39378378.3</eadid>
-                 
-                 # Works, discovered via google
-                 http://archivespec.unl.edu/findingaids/RG05-12-03-boucher-unl.html
-
-                 # no
-                 http://archivespec.unl.edu/findingaids/12-03-boucher-rg05-unl.html
-
-                 # no
-                 http://archivespec.unl.edu/findingaids/rg05-boucher-12-03-unl.html
-                 http://archivespec.unl.edu/findingaids/RG05-boucher-12-03-unl.html
-                 
-                 
-                 /data/source/findingAids/une/sandoz-ms80-reelMS0031-unl.xml
-                 
-                 # ok, but not our finding aid, appears to be for a larger collection, includes several reels.
-                 http://archivespec.unl.edu/findingaids/MS080-sandoz-unl.html
-                 
-                 # no
-                 http://archivespec.unl.edu/findingaids/MS80-reelMS0031-sandoz-unl.html
-                 
-                 # no
-                 http://archivespec.unl.edu/findingaids/MS80-REELMS0031-sandoz-unl.html
+                 New spreadsheet associates file names with URLs.
             -->
             <url/>
             <identifier/>

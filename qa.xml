@@ -7,259 +7,386 @@
       force="1">
  <!--  Number of groups: 1 Group size: 500  -->
  <group n="1">
-     <i n="1">findingAids/oac/ccoro/citruslabels.xml</i>
+
      <!--
          xlf /data/source/findingAids/oac/ccoro/citruslabels.xml
          less cpf_extract/oac/ccoro/citruslabels.c01.xml
+         
+         What does this test?
      -->
+     <i n="1">findingAids/oac/ccoro/citruslabels.xml</i>
 
-     <!-- alpert has item/emph -->
-     <i n="2">findingAids/oac/csa/alpert.xml</i>
      <!--
+         alpert has item/emph in EAD
+
+        <item>
+          <emph render="italic">Standing Committees</emph>
+        </item>
+
          xlf /data/source/findingAids/oac/csa/alpert.xml
          less cpf_extract/oac/csa/alpert.c01.xml
      -->
+     <i n="2">findingAids/oac/csa/alpert.xml</i>
 
-     <i n="3">findingAids/oac/berkeley/bancroft/m88_206_cubanc.xml</i>
-     <!--
+     <!-- 
+          Mixed text node plus <corpname> messes up simple serialization.
+
+          <repository label="Repository">The <corpname source="lcnaf">Bancroft Library</corpname>
+          <address><addressline>University of California, Berkeley</addressline><addressline>Berkeley, California, 94720-6000</addressline><addressline>Phone: (510) 642-6481</addressline><addressline>Fax: (510) 642-7589</addressline><addressline>Email: bancref@library.berkeley.edu</addressline><addressline>URL: http://bancroft.berkeley.edu/</addressline></address>
+          </repository>
+          
+          <citation>From the guide to the Samuel J. and Portia Bell Hume papers, 1848-1990, 1920-1971, (The Bancroft Library)</citation
+
          xlf /data/source/findingAids/oac/berkeley/bancroft/m88_206_cubanc.xml
-         less cpf_extract/oac/berkeley/bancroft/m88_206_cubanc.c01.xml
+         less cpf_qa/oac/berkeley/bancroft/m88_206_cubanc.c01.xml
      -->
+     <i n="3">findingAids/oac/berkeley/bancroft/m88_206_cubanc.xml</i>
 
-     <i n="4">findingAids/oac/berkeley/bancroft/mcb912_cubanc.xml</i>
+
      <!--
          xlf /data/source/findingAids/oac/berkeley/bancroft/mcb912_cubanc.xml
-         less cpf_extract/oac/berkeley/bancroft/mcb912_cubanc.c01.xml
+         less cpf_qa/oac/berkeley/bancroft/mcb912_cubanc.c01.xml
      -->
+     <i n="4">findingAids/oac/berkeley/bancroft/mcb912_cubanc.xml</i>
 
-     <i n="5">findingAids/oac/berkeley/bancroft/m99_280_cubanc.xml</i>
      <!--
          xlf /data/source/findingAids/oac/berkeley/bancroft/m99_280_cubanc.xml
-         less cpf_extract/oac/berkeley/bancroft/m99_280_cubanc.c01.xml
+         less cpf_qa/oac/berkeley/bancroft/m99_280_cubanc.c01.xml
      -->
+     <i n="5">findingAids/oac/berkeley/bancroft/m99_280_cubanc.xml</i>
 
-     <!-- Non-conforming data like a <chronlist><head>Chronology</head><chronitem> means that the <head> will simply disappear. -->
+     <!--
+         Non-conforming data like a <chronlist><head>Chronology</head><chronitem> means that the <head> will simply disappear.
+         
+         EAD:
+
+         <bioghist>
+         <chronlist>
+         <head>Chronology</head>
+         <chronitem>
+         <date>1870s</date>
+         <event>Serrano Water Association began operations. </event>
+         </chronitem>
+         
+         CPF:
+         
+         <chronList>
+         <chronItem>
+         <date>1870s</date>
+         <event>Serrano Water Association began operations. </event>
+         </chronItem>
+
+
+         xlf /data/source/findingAids/oac/uci/spcoll/r079.xml
+         less cpf_qa/oac/uci/spcoll/r079.c01.xml
+     -->
      <i n="6">findingAids/oac/uci/spcoll/r079.xml</i>
 
-     <!--
-         xlf /data/source/findingAids/oac/uci/spcoll/r079.xml
-         less cpf_extract/oac/uci/spcoll/r079.c01.xml
-     -->
      
-     <i n="7">findingAids/oac/berkeley/bancroft/m81_142_cubanc.xml</i>
      <!--
          xlf /data/source/findingAids/oac/berkeley/bancroft/m81_142_cubanc.xml
-         less cpf_extract/oac/berkeley/bancroft/m81_142_cubanc.c01.xml
+         less cpf_qa/oac/berkeley/bancroft/m81_142_cubanc.c01.xml
      -->
+     <i n="7">findingAids/oac/berkeley/bancroft/m81_142_cubanc.xml</i>
 
-     <i n="8">findingAids/oac/berkeley/bancroft/p1905_17116_cubanc.xml</i>
+
      <!--
          xlf /data/source/findingAids/oac/berkeley/bancroft/p1905_17116_cubanc.xml
-         less cpf_extract/oac/berkeley/bancroft/p1905_17116_cubanc.c01.xml
+         less cpf_qa/oac/berkeley/bancroft/p1905_17116_cubanc.c01.xml
      -->
+     <i n="8">findingAids/oac/berkeley/bancroft/p1905_17116_cubanc.xml</i>
 
      <!--
-         Has <p>text<emph>Soledad</emph>more text...</p>. Also span underline css compliant.
+         Has <p>text<emph>Soledad</emph>more text...</p>. and <emph> is removed.
+         
+         xlf /data/source/findingAids/oac/cspr/first_theatre.xml
+         less cpf_qa/oac/cspr/first_theatre.c01.xml
      -->
      <i n="9">findingAids/oac/cspr/first_theatre.xml</i>
-     <!--
-         xlf /data/source/findingAids/oac/cspr/first_theatre.xml
-         less cpf_extract/oac/cspr/first_theatre.c01.xml
-     -->
 
-     <i n="10">findingAids/oac/scl/amkaufmn.xml</i>
      <!--
          xlf /data/source/findingAids/oac/scl/amkaufmn.xml
-         less cpf_extract/oac/scl/amkaufmn.c01.xml
+         less cpf_qa/oac/scl/amkaufmn.c01.xml
      -->
+     <i n="10">findingAids/oac/scl/amkaufmn.xml</i>
 
-     <!-- miligeo has single orig with multi bioghist -->
-     <i n="11">findingAids/oac/csa/miligeow.xml</i>
      <!--
+         miligeo has single orig with multi bioghist
+         
          xlf /data/source/findingAids/oac/csa/miligeow.xml
-         less cpf_extract/oac/csa/miligeow.c01.xml
+         less cpf_qa/oac/csa/miligeow.c01.xml
      -->
+     <i n="11">findingAids/oac/csa/miligeow.xml</i>
 
-     <!-- empty entityType -->
-     <i n="12">findingAids/oac/csudh/spcoll/longbeachfiredepartmentead.xml</i>
      <!--
+         (Presumably a bug created an) empty entityType (that we have fixed.)
+         
          xlf /data/source/findingAids/oac/csudh/spcoll/longbeachfiredepartmentead.xml
-         less cpf_extract/oac/csudh/spcoll/longbeachfiredepartmentead.c01.xml
+         less cpf_qa/oac/csudh/spcoll/longbeachfiredepartmentead.c01.xml
      -->
+     <i n="12">findingAids/oac/csudh/spcoll/longbeachfiredepartmentead.xml</i>
 
-     <!-- p/list@localType="ead/deflist/item, p cannot contain list. -->
-     <i n="13">findingAids/oac/berkeley/bancroft/p1964_063_cubanc.xml</i>
      <!--
+         p/list@localType="ead/deflist/item, p cannot contain list. Therefore we flatten the list.
+         
          xlf /data/source/findingAids/oac/berkeley/bancroft/p1964_063_cubanc.xml
-         less cpf_extract/oac/berkeley/bancroft/p1964_063_cubanc.c01.xml
+         less cpf_qa/oac/berkeley/bancroft/p1964_063_cubanc.c01.xml
      -->
+     <i n="13">findingAids/oac/berkeley/bancroft/p1964_063_cubanc.xml</i>
 
-     <!-- various jing errors, mostly (all?) in biogHist -->
-     <i n="14">findingAids/oac/cuc/mud/h1950.1.ead.xml</i>
      <!--
+         various jing errors, mostly (all?) in biogHist
+         
+         If corpname and text, then ignore the text, otherwise we get bad comma space formatting.
+         
+         <repository label="Repository"><corpname>Claremont Colleges. Library. </corpname> Special Collections, Honnold/Mudd
+         Library. <address><addressline>Claremont, CA 91711</addressline></address>
+         </repository>
+         
+         <citation>From the guide to the Walter R. Brookins Aviation collection, 1900-1954., (Claremont Colleges. Library. Special Collections, Honnold/Mudd Library.)</citation>
+
          xlf /data/source/findingAids/oac/cuc/mud/h1950.1.ead.xml
-         less cpf_extract/oac/cuc/mud/h1950.1.ead.c01.xml
+         less cpf_qa/oac/cuc/mud/h1950.1.ead.c01.xml
      -->
+     <i n="14">findingAids/oac/cuc/mud/h1950.1.ead.xml</i>
+
 
      <!--
          oac/cuc/mud/h1950.2_carruthers.ead.xml has a very important test of list/item/list converted to
          level vs list/item retained as list. Has a great test:
-
-p
-list/item/list
-p
-list/item
+         
+         p
+         list/item/list
+         p
+         list/item
+         
+         xlf /data/source/findingAids/oac/cuc/mud/h1950.2_carruthers.ead.xml
+         less cpf_qa/oac/cuc/mud/h1950.2_carruthers.ead.c01.xml
      -->
      <i n="15">findingAids/oac/cuc/mud/h1950.2_carruthers.ead.xml</i>
-     <!--
-         xlf /data/source/findingAids/oac/cuc/mud/h1950.2_carruthers.ead.xml
-         less cpf_extract/oac/cuc/mud/h1950.2_carruthers.ead.c01.xml
-     -->
 
-     <i n="16">findingAids/oac/ucsf/spcoll/lifindin.xml</i>
      <!--
+         <title> and <note> inside <p> are crushed out of existence.
+
          xlf /data/source/findingAids/oac/ucsf/spcoll/lifindin.xml
-         less cpf_extract/oac/ucsf/spcoll/lifindin.c01.xml
+         less cpf_qa/oac/ucsf/spcoll/lifindin.c01.xml
      -->
+     <i n="16">findingAids/oac/ucsf/spcoll/lifindin.xml</i>
 
-     <i n="17">findingAids/oac/omca/guermonprez_final.xml</i>
      <!--
          xlf /data/source/findingAids/oac/omca/guermonprez_final.xml
-         less cpf_extract/oac/omca/guermonprez_final.c01.xml
+         less cpf_qa/oac/omca/guermonprez_final.c01.xml
      -->
+     <i n="17">findingAids/oac/omca/guermonprez_final.xml</i>
 
-     <i n="18">findingAids/oac/ucsc/spcoll/ms167.xml</i>
      <!--
-         xlf /data/source/findingAids/oac/ucsc/spcoll/ms167.xml
-         less cpf_extract/oac/ucsc/spcoll/ms167.c01.xml
-     -->
+         Apparently another <p></p><list><item></item></list><p></p> example. Skipped in qa_ead2cpf.xsl as a duplication.
 
-     <i n="19">findingAids/oac/csudh/spcoll/annicsud.xml</i>
+         xlf /data/source/findingAids/oac/ucsc/spcoll/ms167.xml
+         less cpf_qa/oac/ucsc/spcoll/ms167.c01.xml
+     -->
+     <i n="18">findingAids/oac/ucsc/spcoll/ms167.xml</i>
+
      <!--
          xlf /data/source/findingAids/oac/csudh/spcoll/annicsud.xml
-         less cpf_extract/oac/csudh/spcoll/annicsud.c01.xml
+         less cpf_qa/oac/csudh/spcoll/annicsud.c01.xml
      -->
+     <i n="19">findingAids/oac/csudh/spcoll/annicsud.xml</i>
 
-     <i n="20">findingAids/oac/getty/spcoll/861187.xml</i>
      <!--
+         <title> inside <p> crushed out. No in auto QA qa_ead2cpf.xsl.
+
          xlf /data/source/findingAids/oac/getty/spcoll/861187.xml
-         less cpf_extract/oac/getty/spcoll/861187.c01.xml
+         less cpf_qa/oac/getty/spcoll/861187.c01.xml
      -->
+     <i n="20">findingAids/oac/getty/spcoll/861187.xml</i>
 
-     <i n="21">findingAids/oac/maritime/safr_22247_p91-078.xml</i>
      <!--
+         <head> deleted (with its text> from <chronList>. 
+
          xlf /data/source/findingAids/oac/maritime/safr_22247_p91-078.xml
-         less cpf_extract/oac/maritime/safr_22247_p91-078.c01.xml
+         less cpf_qa/oac/maritime/safr_22247_p91-078.c01.xml
      -->
+     <i n="21">findingAids/oac/maritime/safr_22247_p91-078.xml</i>
 
-     <i n="22">findingAids/oac/maritime/apl.xml</i>
      <!--
+         Apparently another test of <list> in <biogHist>. In original <p> contained <list> and <list>
+         contained <head>. Outer <p> removed, inner <head> converted to <item>
+         
          xlf /data/source/findingAids/oac/maritime/apl.xml
-         less cpf_extract/oac/maritime/apl.c01.xml
+         less cpf_qa/oac/maritime/apl.c01.xml
      -->
+     <i n="22">findingAids/oac/maritime/apl.xml</i>
 
-     <i n="23">findingAids/oac/humboldt/schoenro.xml</i>
      <!--
+         <emph> removed from <p> and <lb/> removed from <p>
+
          xlf /data/source/findingAids/oac/humboldt/schoenro.xml
-         less cpf_extract/oac/humboldt/schoenro.c01.xml
+         less cpf_qa/oac/humboldt/schoenro.c01.xml
      -->
+     <i n="23">findingAids/oac/humboldt/schoenro.xml</i>
 
      <!-- 
           Has <blockquote> and some other elements that we remove and serialize the content into a
           string. Old code allowed naked text that was fixed by putting inside <p>.
+          
+          xlf /data/source/findingAids/oac/ucsc/spcoll/ms160.xml
+         less cpf_qa/oac/ucsc/spcoll/ms160.c01.xml
      -->
      <i n="24">findingAids/oac/ucsc/spcoll/ms160.xml</i>
-     <!--
-         xlf /data/source/findingAids/oac/ucsc/spcoll/ms160.xml
-         less cpf_extract/oac/ucsc/spcoll/ms160.c01.xml
-     -->
+
 
      <!--
          Generated errors on Feb 18 2014 run, so added here to verify bug fixes.
+
+         xlf /data/source/findingAids/rmoa/nmu1mss581bc.xml
+         less cpf_qa/rmoa/nmu1mss581bc.c01.xml
      -->
      <i n="25">findingAids/rmoa/nmu1mss581bc.xml</i>
-     <!--
-         xlf /data/source/findingAids/rmoa/nmu1mss581bc.xml
-         less cpf_extract/rmoa/nmu1mss581bc.c01.xml
-     -->
 
-     <i n="26">findingAids/umi/clementsmss/davised_final.xml</i>
+
      <!--
+         Has tricky unittitle value and markup which regularly results in lost text. The two unittitles are
+         not duplicates of each other, so both are retained.
+         
+         <unittitle>Edmund Davis diary
+         <unitdate>1865</unitdate>
+         </unittitle>
+         <unittitle>Davis, Edmund diary</unittitle>
+         
+         <citation>From the guide to the Edmund Davis diary, Davis, Edmund diary, 1865, (William L. Clements Library, University of Michigan)</citation>
+         
+         <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink"
+         xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource"
+         xlink:type="simple"
+         xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf"
+         xlink:href="">
+         <relationEntry>Edmund Davis diary, Davis, Edmund diary, 1865</relationEntry>
+
          xlf /data/source/findingAids/umi/clementsmss/davised_final.xml
-         less cpf_extract/umi/clementsmss/davised_final.c01.xml
+         less cpf_qa/umi/clementsmss/davised_final.c01.xml
      -->
+     <i n="26">findingAids/umi/clementsmss/davised_final.xml</i>
 
-     <i n="27">findingAids/aao/uoa_university_of_az/UAMS469.xml</i>
      <!--
          xlf /data/source/findingAids/aao/uoa_university_of_az/UAMS469.xml
-         less cpf_extract/aao/uoa_university_of_az/UAMS469.c01.xml
+         less cpf_qa/aao/uoa_university_of_az/UAMS469.c01.xml
      -->
+     <i n="27">findingAids/aao/uoa_university_of_az/UAMS469.xml</i>
 
-     <i n="28">findingAids/harvard/trc00032.xml</i>
      <!--
+         No .c01 due to no origination, controlaccess, or scopecontent. There apparently used t be a .c01
+         which is odd.
+
+          Changed multi hyphens to \- since multi hyphens can't occur inside an XML comment.
+          
+          <c>
+          <did>
+          <unittitle><persname>Wells, Briant H., b. 1871. </persname>A.L.s. to
+          <persname>[\-\-\-] Boos; </persname><geogname>Honolulu, </geogname>24
+          Oct <unitdate calendar="gregorian" datechar="single" era="ce">1947. </unitdate></unittitle>
+          <physdesc>
+          <extent>4 p.</extent>
+          </physdesc>
+          </did>
+          <note>
+          <p>With TS. transcript. Anecdote from War of 1898.</p>
+          </note>
+          </c>
+          
+          <persname>[\-\-\-] Hallock;</persname>
+          
+          <persname>Sergeant [\-\-\-\-\-];</persname>
+          
+          xlf /data/source/findingAids/harvard/trc00032.xml
+
+         
          xlf /data/source/findingAids/harvard/trc00032.xml
-         less cpf_extract/harvard/trc00032.c01.xml
+         less cpf_qa/harvard/trc00032.c01.xml
      -->
+     <i n="28">findingAids/harvard/trc00032.xml</i>
 
-     <i n="29">findingAids/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.xml</i>
      <!--
+         Unknown why this was originally added to QA, but on Sep 8 2014 discovered error in <citation> "PapersMary".
+         
+         sep 25 2014 updated because we now put a comma between unittitle values.
+
+         <citation>From the guide to the Mary TallMountain Papers, Mary Tallmountain Collection, 1968-1998, (University of Alaska Fairbanks Alaska Polar Regions Collections &amp; Archives)</citation>
+         
          xlf /data/source/findingAids/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.xml
-         less cpf_extract/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.c01.xml
+         less cpf_qa/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.c01.xml
      -->
+     <i n="29">findingAids/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.xml</i>
 
-     <i n="30">findingAids/riamco/US-RPB-ms2007.032.xml</i>
      <!--
+         <citation>?
+
          xlf /data/source/findingAids/riamco/US-RPB-ms2007.032.xml
-         less cpf_extract/riamco/US-RPB-ms2007.032.c01.xml
+         less cpf_qa/riamco/US-RPB-ms2007.032.c01.xml
      -->
+     <i n="30">findingAids/riamco/US-RPB-ms2007.032.xml</i>
 
      <!-- 
-          span outside p
+          At one point a bug results in span outside p due to p/emph. Also p/chronlist, which is wrong.
+          
+          xlf /data/source/findingAids/umi/bentley/vpcfo.xml
+          less cpf_qa/umi/bentley/vpcfo.c01.xml
      -->
      <i n="31">findingAids/umi/bentley/vpcfo.xml</i>
-     <!--
-         xlf /data/source/findingAids/umi/bentley/vpcfo.xml
-         less cpf_extract/umi/bentley/vpcfo.c01.xml
-     -->
 
-     <i n="32">findingAids/umi/bentley/horace.xml</i>
+
      <!--
+         p/list changed to outline/level/item
+
          xlf /data/source/findingAids/umi/bentley/horace.xml
-         less cpf_extract/umi/bentley/horace.c01.xml
+         less cpf_qa/umi/bentley/horace.c01.xml
      -->
+     <i n="32">findingAids/umi/bentley/horace.xml</i>
 
-     <i n="33">findingAids/umi/bentley/umpicas.xml</i>
      <!--
+         Apparently more chronList and outline testing.
+
          xlf /data/source/findingAids/umi/bentley/umpicas.xml
-         less cpf_extract/umi/bentley/umpicas.c01.xml
+         less cpf_qa/umi/bentley/umpicas.c01.xml
      -->
+     <i n="33">findingAids/umi/bentley/umpicas.xml</i>
 
-     <i n="34">findingAids/aao/asu_az_state_university/blakely.xml</i>
      <!--
+         Apparently more chronList and outline testing.
+
          xlf /data/source/findingAids/aao/asu_az_state_university/blakely.xml
-         less cpf_extract/aao/asu_az_state_university/blakely.c01.xml
+         less cpf_qa/aao/asu_az_state_university/blakely.c01.xml
      -->
-
-     <!-- had an infinite loop due to <p> containing empty self-closing <p/> -->
-     <i n="35">findingAids/ahub/aaschool/gb-1968-aa.xml</i>
-     <!--
-         xlf /data/source/findingAids/ahub/aaschool/gb-1968-aa.xml
-         less cpf_extract/ahub/aaschool/gb-1968-aa.c01.xml
-     -->
+     <i n="34">findingAids/aao/asu_az_state_university/blakely.xml</i>
 
      <!--
-         This file is an empty template. Pointless to even process it.
-         Original had HTML entity &copy; changed to more universal &#169; which should be ok in XML
+         had an infinite loop due to <p> containing empty self-closing <p/>
+         
+         self closing <p/> removed. 
+
+         xlf /data/source/findingAids/ahub/f_2.xml
+         less cpf_qa/ahub/aaschool/f_2.c01.xml
+         
+         Also:
+
+         Examples of ( b nnnn) which is b without the dot.
+         fn: /data/source/findingAids/ahub/f_2.xml
+         unfixed date: Mostafavi, Mohsen. ( b 1945) educator ,
+         unfixed date: Gray, Charles. ( b 1828) architect ,
+         unfixed date: Lloyd, Michael. ( b 1927) educator, formerly John Lloyd ,
+         unfixed date: Architectural Association Inc. ( 1847-) 
      -->
-     <i n="36">findingAids/nyu/nyhs/archtest.xml</i>
-     <!--
-     xlf /data/source/findingAids/nyu/nyhs/archtest.xml
-     less cpf_extract/nyu/nyhs/archtest.c01.xml
-     -->
+     <i n="35">findingAids/ahub/f_2.xml</i>
 
      <!--
+         Not checked in qa_ead2cpf.xsl.
+
          Only has .r001, no .c01 and doesn't test anything else. The entity in controlaccess is used for the .r001.
          Since we only put biogHist in the .c01, the biogHist here is totally lost.
+         
+         Has nice date (bap.1754, d.1802). This might be the first baptismal date we've seen. 
+         
+         less cpf_qa/afl/165407_FTaSU1977012j.r001.xml
      -->
      <i n="38">findingAids/afl/165407_FTaSU1977012j.xml</i>
 
@@ -272,15 +399,24 @@ list/item
          University Archive...", "Strathclyde University Archive...", ...)
          
          $otherData/did/repository
+         
+         less cpf_qa/duke/classic-EADs/ncmutual.c01.xml
+         
+         There was an older ahub finding aid with multiple repositories, but I can't find it in the new data.
      -->
      <i n="39">findingAids/duke/classic-EADs/ncmutual.xml</i>
-     <i n="40">findingAids/ahub/strathclydeuni/948_2002.xml</i>
 
-     <!-- Had no output due to xmlns not having been fixed by clean.pl. No other QA rationale. -->
-     <!-- Has chronlist dates. -->
+
+     <!--
+         Had no output due to xmlns not having been fixed by clean.pl. No other QA rationale.
+         
+         Has chronlist dates.
+     -->
      <i n="41">findingAids/howard/Coll._007-ead.xml</i>
 
-     <!-- Has no output because there is no ead/archdesc/did/origination -->
+     <!--
+         Has no output because there is no ead/archdesc/did/origination
+     -->
      <i n="40">findingAids/howard/Coll._066-ead.xml</i>
 
      <!--
@@ -295,37 +431,98 @@ list/item
      <i n="44">findingAids/cjh/ajhs-ead-snac/109192_UriahPLevy02.xml</i>
      <i n="45">findingAids/cjh/ajhs-ead-snac/109204_Ehrenreich.xml</i>
 
-     <!-- bad activeDate[2] which is  toDate -->
+     <!--
+         OMG. Not added to QA because there are 877 entities, and unclear which of them has the bad
+         date. Presumably the bad date caused a validation error, and has been fixed.
+
+         bad activeDate[2] which is  toDate
+     -->
      <i n="46">findingAids/harvard/hou01429.xml</i>
 
-     <!-- error: element "item" from namespace "urn:isbn:1-931666-33-4" not allowed -->
+     <!--
+         Not added to QA because jing validation will catch this.
+
+         error: element "item" from namespace "urn:isbn:1-931666-33-4" not allowed
+     -->
      <i n="47">findingAids/umi/bentley/msassemb.xml</i>
 
-     <!-- catchall error  line 226, 236-->
+     <!--
+         Not added to QA because it will show up in logs or in jing validation.
+
+         catchall error  line 226, 236
+         
+         less cpf_qa/cjh/lbi-ead-snac/121497_121497_SeligsohnKronerFamily.c01.xml
+     -->
      <i n="48">findingAids/cjh/lbi-ead-snac/121497_121497_SeligsohnKronerFamily.xml</i>
 
-     <!-- list-error due to list/item/list/defitem line 103, 110, 117, 124, .. 281, 288 -->
+     <!--
+         Hand check this to make sure the QA auto test is correct. 
+
+         list-error due to list/item/list/defitem line 103, 110, 117, 124, .. 281, 288
+
+         Has repository/extref
+         
+         less cpf_qa/harvard/hua15005.c01.xml
+     -->
      <i n="49">findingAids/harvard/hua15005.xml</i>
 
-     <!-- list-error due to list/item/list/defitem around line 260 -->
+     <!--
+         list-error due to list/item/list/defitem around line 260
+         
+         less cpf_qa/harvard/hua03006.c01.xml
+     -->
      <i n="50">findingAids/harvard/hua03006.xml</i>
 
-     <!-- has xm-replace_text processing instruction, but not in any data we use. Pointless. -->
+     <!--
+         has xm-replace_text processing instruction, but not in any data we use. Pointless.
+     -->
      <i n="51">findingAids/rmoa/wyu-ah513004.xml</i>
      <i n="52">findingAids/rmoa/wyu-ah07445.xml</i>
      <i n="53">findingAids/rmoa/wyu-ah10419.xml</i>
 
-     <!-- has xm-replace_text processing instruction in bioghist -->
+     <!--
+         Not added to QA because nothing to test.
+
+         has xm-replace_text processing instruction in bioghist
+         
+         xlf /data/source/findingAids/rmoa/wyu-ah11726.xml
+         less cpf_qa/rmoa/wyu-ah11726.c01.xml
+     -->
      <i n="54">findingAids/rmoa/wyu-ah11726.xml</i>
 
-     <!-- multi unittitle effects text in relationEntry and citation -->
+     <!--
+         Multi unittitle effects text in resourceRelation/relationEntry and citation. This example is funny
+         looking because the two unittitles are quite similar.
+         
+         less cpf_qa/umi/clementsmss/ottfam_final.c01.xml
+     -->
      <i n="55">findingAids/umi/clementsmss/ottfam_final.xml</i>
 
-     <!-- ead url testing -->
-     <i n="56">findingAids/bnf/preliminary/Christine_of_Pizan_ms.xml</i>
+     <!--
+         ead url testing
+     -->
      <i n="57">findingAids/aps/Mss.649.962.Sh6m-ead.xml</i>
      <i n="58">findingAids/byu/UPB_UA5399.xml</i>
      <i n="59">findingAids/byu/UPB_MSSSC2175.xml</i>
+
+     <!--
+         repository mixed corpname with subarea
+         
+         <repository encodinganalog="852">
+         <corpname>Columbia University.<subarea>Rare Book and Manuscript Library</subarea>
+         </corpname>
+         <address>
+         <addressline>6th Floor Butler Library</addressline>
+         <addressline>535 West 114th St.</addressline>
+         <addressline> M.C. 1127</addressline>
+         <addressline>New York, NY 10027</addressline>
+         </address>
+         </repository>
+         
+         <citation>From the guide to the Division of Student Affairs Photograph Collection, 2003-2008, [Bulk: 2003-2004], (Columbia University. Rare Book and Manuscript Library)</citation>
+         
+         less cpf_qa/colu/nnc-ua/ldpd_8429267_ead.c01.xml
+     -->
      <i n="60">findingAids/colu/nnc-ua/ldpd_8429267_ead.xml</i>
      <i n="61">findingAids/crnlu/KCL05619-040.xml</i>
      <i n="62">findingAids/fivecol/manosca47.xml</i>
@@ -341,12 +538,30 @@ list/item
      <i n="72">findingAids/mhs/gr00027.xml</i>
      <i n="73">findingAids/mit/AC.0072-ead.xml</i>
 
-     <!-- Has a date 1927 to 1928 that at one time didn't parse. Fixed. Correct output: -->
-     <!-- 138                   <dateRange> -->
-     <!-- 139                      <fromDate standardDate="1927">1927</fromDate> -->
-     <!-- 140                      <toDate standardDate="1928">1928</toDate> -->
-     <!-- 141                   </dateRange> -->
-     <!-- 142                   <event>Studies at Vienna University</event> -->
+     <!--
+         Has a date 1927 to 1928 that at one time didn't parse. Fixed. Correct output:
+
+        <chronitem>
+          <date>1927 to 1928</date>
+          <event>Studies at Vienna University</event>
+        </chronitem>
+
+
+         138                   <dateRange>
+         139                      <fromDate standardDate="1927">1927</fromDate>
+         140                      <toDate standardDate="1928">1928</toDate>
+         141                   </dateRange>
+         142                   <event>Studies at Vienna University</event>
+         
+         xlf /data/source/findingAids//mit/MC.0572-ead.xml
+         less cpf_qa/mit/MC.0572-ead.c01.xml
+         
+         Also has <function> as a positive QA test:
+
+         <function>
+            <term>Institute Professor.</term>
+         </function>
+     -->
      <i n="74">findingAids/mit/MC.0572-ead.xml</i>
 
      <i n="75">findingAids/ncsu/ua023_020.xml</i>
@@ -359,16 +574,136 @@ list/item
      <i n="83">findingAids/ohlink/OhCiUAR0188.xml</i>
      <i n="84">findingAids/pu/mudd_publicpolicy/MC001.03.EAD.xml</i>
      <i n="85">findingAids/riamco/US-RNN-ms17.xml</i>
+     
+     <!--
+         <repository encodinganalog="852" label="Repository">
+         <corpname/>
+         </repository>
+         
+         We do not currently use prefercite:
+
+         <prefercite>
+         <head>Preferred Citation</head>
+         <p>New Mexico Historic American Building Survey (HABS), Fray Angélico Chávez History Library, Santa Fe, New Mexico, USA</p>
+         </prefercite>
+         
+         Some records have missing repo info, and we don't want empty () at the end of the
+         citation.
+         
+         Old code bug with "()" at the end fixed Sep 9 2014:
+         <citation>From the guide to the New Mexico Historic American Building Survey (HABS), 1930-1940, ()</citation>
+         
+         New, correct:
+         <citation>From the guide to the New Mexico Historic American Building Survey (HABS)1930-1940</citation>
+
+         less cpf_qa/rmoa/nmsmac418-s.c01.xml
+
+     -->
      <i n="86">findingAids/rmoa/nmsmac418-s.xml</i>
+
      <i n="87">findingAids/rutu/manuscripts/nyfai.xml</i>
+
+     <!--
+         <lb/> inside repository value
+         
+         <repository encodinganalog="852$a" label="Repository: ">
+         Special Collections Research Center, <lb/> Syracuse University Libraries <lb/>
+         <address>
+         <addressline>222 Waverly Avenue<lb/>
+         </addressline>
+         <addressline>Syracuse, NY 13244-2010<lb/>
+         </addressline>
+         <addressline>
+         <ptr href="http://scrc.syr.edu"/>
+         </addressline>
+         </address>
+         </repository>
+
+         <citation>From the guide to the Queen Victoria Letter, 1866, (Special Collections Research Center, Syracuse University Libraries)</citation>
+
+         What? This isn't not missing the <repository> Old: Missing repository, we create a repository that
+         has text and nodes inside <repository>"
+
+         less cpf_qa/syru/queen_vic.c01.xml
+     -->
      <i n="88">findingAids/syru/queen_vic.xml</i>
+
+     <!--
+         Why is this here? This EAD has no entities and generates no output files. 
+         xlf /data/source/findingAids/ual/u0003_0003242.ead.xml
+     -->
      <i n="89">findingAids/ual/u0003_0003242.ead.xml</i>
+
+     <!--
+         Repo with no clear repo name. Uses the unittitle.
+
+         <repository label="Repository">
+         <address>
+         <addressline>Special Collections Research Center</addressline>
+         <addressline>University of Chicago Library</addressline>
+         <addressline>1100 East 57th Street</addressline>
+         <addressline>Chicago, Illinois 60637 U.S.A.</addressline>
+         </address>
+         </repository>
+         
+         <prefercite>
+         <head>Citation</head>
+         <p>When quoting material from
+         this collection, the preferred citation is: Starr, Frederick. Mexican Manuscripts. Collection, [Box #, Folder #], Special Collections Research Center, University of Chicago Library</p>
+         </prefercite>
+         
+         less cpf_qa/uchic/ICU.SPCL.STARRMEX.r001.xml
+     -->
      <i n="90">findingAids/uchic/ICU.SPCL.STARRMEX.xml</i>
+
      <i n="91">findingAids/uct/MSS19970101.xml</i>
+
+     <!--
+         Has repository/(text()|subarea)
+         
+         <repository encodinganalog="852">University of Delaware Library - <subarea>Special Collections</subarea>
+         </repository>
+         
+         The prefercite that we are not using:
+
+         <prefercite encodinganalog="524">
+         <head>Citation</head>
+         <p>MSS 272, W. D. Snodgrass correspondence with Daniela Gioseffi, Special Collections, University of Delaware Library, Newark,
+         Delaware.</p>
+         </prefercite>
+         
+         <citation>From the guide to the W. D. Snodgrass correspondence with Daniela Gioseffi, 1977–1984, (University of Delaware Library - Special Collections)</citation>
+         less cpf_qa/ude/minimal_ead/mss0272.c01.xml
+-->
      <i n="92">findingAids/ude/minimal_ead/mss0272.xml</i>
+
      <i n="93">findingAids/ude/full_ead/mss0099_0576.xml</i>
      <i n="94">findingAids/uil/vice_chancellor_for_administrative_affairs_issuanc_995.xml</i>
+     
+     <!--
+         Pointless? repository/corpname with text() and subarea, but we are not using it to build a <citation>
+         
+         <repository label="Repository:" encodinganalog="852$a">
+         <corpname>University of Kansas<subarea>Kenneth Spencer Research Library</subarea>
+         <subarea>Department of Special Collections</subarea>
+         </corpname>
+         <address>
+         <addressline>1450 Poplar Lane, Lawrence, KS 66045-7616</addressline>
+         <addressline>Phone: (785)864-4334</addressline>
+         <addressline>Fax: (785)864-5803</addressline>
+         <addressline>URL: http://spencer.lib.ku.edu</addressline>
+         </address>
+         </repository>
+         
+         The prefercite that we are not using:
+         
+         <prefercite encodinganalog="524" id="a18">
+         <head>Preferred Citation</head>
+         <p>Document of Joannes Petrus de Blanchis, Department of Special Collections, MS 220, Kenneth Spencer Research Library, University of Kansas Libraries</p>
+         </prefercite>
+     -->
      <i n="95">findingAids/uks/ksrl.sc.holyromanempire.xml</i>
+
      <i n="96">findingAids/umd/MdU.ead.univarch.0181.xml</i>
      <i n="97">findingAids/umi/bentley/titush.xml</i>
      <i n="98">findingAids/umi/clementsmss/maxim_final.xml</i>
@@ -396,92 +731,202 @@ list/item
 
      <i n="121">findingAids/afl/11201_M1983_01.xml</i>
 
-     <!-- p/table was turned into text outside any element. Now wrapped in <p> -->
+     <!--
+         p/table was turned into text outside any element. Now wrapped in <p>
+         
+         less cpf_qa/utsu/ULA_mss198.c01.xml
+     -->
      <i n="122">findingAids/utsu/ULA_mss198.xml</i>
 
-     <!-- item/ref and code was incorrectly creating sibling items in outline catchall -->
+     <!--
+         item/ref and code was incorrectly creating sibling items in outline catchall
+     -->
      <i n="123">findingAids/ude/full_ead/mss0583.xml</i>
 
-     <!-- A second type of outline catchall persname -->
+     <!--
+         A second type of outline catchall persname
+     -->
      <i n="124">findingAids/lc/mu002008.xml</i>
      
-     <!-- various validation issues -->
+     <!--
+         various validation issues
+         128 was ahub, no longer in repository
+     -->
      <i n="125">findingAids/harvard/hua23004.xml</i>
      <i n="126">findingAids/harvard/hua07007.xml</i>
-     <i n="127">findingAids/ahub/huddersfield/gb1103dc.xml</i>
-     <i n="128">findingAids/ahub/royalpsych/gb2087rcpsych-h.xml</i>
+     <i n="127">findingAids/ahub/f_9052.xml</i>
 
-     <!-- less -N cpf_extract/ahub/guas/gb0248accn2949.c01.xml p in p with no other text in the outer p. -->
-     <i n="129">findingAids/ahub/guas/gb0248accn2949.xml</i>
+     <!--
+         Has p in p with no other text in the outer p. Also text in bioghist with no surrounding element.
+         
+         <p>
+         <p>Source: http://www.benjidog.co.uk/allen/Lines/Ben%20Line.html</p>
+         </p>
+         
+         <biogHist>
+         <p>The company began in 1839 with a partnership between William and Alexander Thomson who built up routes to Europe, Canada, the far East and the Baltic. The company changed its name to Ben Line Steamers Ltd in 1919.</p>
+         <p>During the 1970s the Ben Line diversified into oil drilling, container ships and the transportation of chemical and formed the Ben Line Ship Management Ltd with Galbraith Wrightson Ltd in 1972. The company took over the Sheaf Steam Shipping Co. in 1976 but with shipping in decline, it combined with East Asiatic Co., Copenhagen, to run a weekly service to the Far East. The company sold their remaining ships in 1992.</p>
+         <p>Source: http://www.benjidog.co.uk/allen/Lines/Ben%20Line.html</p>
+         <citation>From the guide to the Records of Ben Line Ship Management Ltd, shipping line, Edinburgh, Scotland, 1851-1978, (Glasgow University Archive Services)</citation>
+         </biogHist>
+
+
+         less cpf_qa/ahub/guas/gb0248accn2949.c01.xml
+
+         File is missing from new ahub data.
+     -->
      
-     <!-- less -N cpf_extract/ahub/tate/gb-70-tga-723.c01.xml bioghist/span change span to p -->
-     <i n="130">findingAids/ahub/tate/gb-70-tga-723.xml</i>
+     <!--
+         bioghist/span change span to p
+         
+         less -N cpf_qa/ahub/tate/gb-70-tga-723.c01.xml
+         
+         Different record, or changed, or the comment above is wrong.
+         <row url="http://archiveshub.ac.uk/data/gb70-tga723.xml" file="f_21243.xml"/>
+     -->
 
-     <!-- bad dates -->
-     <!-- tamucush/00065.xml has an empty geogname -->
+     <!-- 
+          bad dates
+          tamucush/00065.xml has an empty geogname
+     -->
      <i n="131">findingAids/taro/tamucush/00065.xml</i>
      <i n="132">findingAids/unc/04953.xml</i>
      <i n="133">findingAids/duke/classic-EADs/dukeend.xml</i>
 
-     <!-- yet another catchall from outline, also has multiple names in controlaccess, controlaccess has family names -->
+     <!--
+         yet another catchall from outline, also has multiple names in controlaccess, controlaccess has family names
+     -->
      <i n="134">findingAids/ude/full_ead/mss0489.xml</i>
 
-     <!-- bioghist/emph and bioghist/text() both of which are invalid,  manually fixed original ead -->
-     <i n="135">findingAids/ahub/bath/gb1128-bowen.xml</i>
-     <i n="136">findingAids/ahub/vna_aad/gb71thm-95.xml</i>
+     <!--
+         Manually check output. New ahub not manually fixed.
+         bioghist/emph and bioghist/text() both of which are invalid, manually fixed original ead
+         
+         <row url="http://archiveshub.ac.uk/data/gb1128-bowen.xml" file="f_1590.xml"/>
+         <row url="http://archiveshub.ac.uk/data/gb71-thm/95.xml" file="f_22790.xml"/>
+
+         <i n="135">findingAids/ahub/bath/gb1128-bowen.xml</i>
+         <i n="136">findingAids/ahub/vna_aad/gb71thm-95.xml</i>
+     -->
+     <i n="135">findingAids/ahub/f_1590.xml</i>
+     <i n="136">findingAids/ahub/f_22790.xml</i>
 
      <!--
+         Ignore these. We have new files and a better system of URLs.
+
          some ahub files with inconsistent eadid, fixed by Jane and individually sent back to uva where they
          were cleaned and substituted into the repo.  1_2002.xml still results in a 404 url.
-     -->
-     
-     <i n="137">findingAids/ahub/soas/1_2002.xml</i>
-     <i n="138">findingAids/ahub/soas/162_2002.xml</i>
 
-     <!-- ( won't work because qa doesn't have the source repository name) check that resourceRelation xlink:href is correct -->
+         <i n="137">findingAids/ahub/soas/1_2002.xml</i>
+         <i n="138">findingAids/ahub/soas/162_2002.xml</i>
+     -->
+
+     <!--
+         ( won't work because qa doesn't have the source repository name) check that resourceRelation xlink:href is correct
+     -->
      <i n="139">findingAids/harvard/hou00932.xml</i>
 
-     <!-- name crunching problem, missging comma, extra info appended "MackayAlexander Murdoch1849-1890Mechanical engineer, missionary" -->
-     <i n="140">findingAids/ahub/birminghamspcoll/900_2002.xml</i>
+     <!--
+         File missing from new ahub data. Also, ahub is now using aacr2 name rules.
 
-     <!-- ead url check -->
+         name crunching problem, missing comma, extra info appended "MackayAlexander Murdoch1849-1890Mechanical engineer, missionary"
+         
+         <controlaccess id="a12">
+         <persname rules="ncarules">
+         <emph altrender="surname">Mackay</emph>
+         <emph altrender="forename">Alexander Murdoch</emph>
+         <emph altrender="dates">1849-1890</emph>
+         <emph altrender="epithet">Mechanical engineer, missionary</emph>
+         </persname>
+         
+         <part>Mackay, Alexander Murdoch, 1849-1890, Mechanical engineer, missionary</part>
+         
+         xlf /data/source/findingAids/ahub/birminghamspcoll/900_2002.xml
+         less cpf_qa/ahub/birminghamspcoll/900_2002.c01.xml
+         
+         <i n="140">findingAids/ahub/birminghamspcoll/900_2002.xml</i>
+     -->
+
+     <!--
+         ead url check
+     -->
      <i n="141">findingAids/nypl/brg22240.xml</i>
 
-     <!-- unitid has &#10; and a bunch of spaces -->
-     <i n="142">findingAids/ahub/southampton/7_2002.xml</i>
+     <!--
+         Ignore. We have a new way to test URLs
+         Nothing to automatically test. Needs to be a real run (not QA) so the xlink:href URL will be
+         generated.
+         
+         unitid has &#10; and a bunch of spaces
+         
+         less cpf_qa/ahub/southampton/7_2002.r001.xml
+         <i n="142">findingAids/ahub/southampton/7_2002.xml</i>
+     -->
 
-     <!-- ahub normal and odd names for qa -->
-     <i n="143">findingAids/ahub/bangor/632_2002_2002.xml</i>
-     <i n="144">findingAids/ahub/bangor/1120_2002_2002.xml</i>
-     <i n="145">findingAids/ahub/keelespcoll/619_2002.xml</i>
-     <i n="146">findingAids/ahub/gulsc/Bremner.xml</i>
-     <i n="147">findingAids/ahub/gulsc/MSGEN527.xml</i>
-     <i n="148">findingAids/ahub/soas/85_2002.xml</i>
-     <i n="149">findingAids/ahub/soas/52_2002.xml</i>
-     <i n="150">findingAids/ahub/soas/49_2002.xml</i>
-     <i n="151">findingAids/ahub/soas/117_2002.xml</i>
-     <i n="152">findingAids/ahub/soas/40_2002.xml</i>
-     <i n="153">findingAids/ahub/imperial/0013_2002.xml</i>
+     <!--
+         Ignore. 
+         Not in auto testing QA. Maybe add these later?
 
-     <!-- H Lockley -->
+         ahub normal and odd names for qa
+         
+         <i n="143">findingAids/ahub/bangor/632_2002_2002.xml</i>
+         <i n="144">findingAids/ahub/bangor/1120_2002_2002.xml</i>
+         <i n="145">findingAids/ahub/keelespcoll/619_2002.xml</i>
+         <i n="146">findingAids/ahub/gulsc/Bremner.xml</i>
+         <i n="147">findingAids/ahub/gulsc/MSGEN527.xml</i>
+         <i n="148">findingAids/ahub/soas/85_2002.xml</i>
+         <i n="149">findingAids/ahub/soas/52_2002.xml</i>
+         <i n="150">findingAids/ahub/soas/49_2002.xml</i>
+         <i n="151">findingAids/ahub/soas/117_2002.xml</i>
+         <i n="152">findingAids/ahub/soas/40_2002.xml</i>
+         <i n="153">findingAids/ahub/imperial/0013_2002.xml</i>
+     -->
+
+     <!--
+         Unclear what this was testing.
+         H Lockley
      <i n="154">findingAids/ahub/lough/gb1176d59.xml</i>
+     -->
 
-     <!-- useless: F J Weideman -->
+     <!--
+         Unclear what this was testing.
+         useless: F J Weideman
      <i n="155">findingAids/ahub/guas/stod-des-98.xml</i>
+     -->
 
-     <!-- TS Begbie -->
+     <!--
+         Unclear what this was testing.
+         TS Begbie
      <i n="156">findingAids/ahub/guas/ugd003-ugd191-18.xml</i>
+     -->
 
-     <!-- PG Kime -->
+     <!--
+         Unclear what this was testing.
+         PG Kime
      <i n="157">findingAids/ahub/exeter/0057_2002.xml</i>
+     -->
 
-     <!-- multi persname in origination, breaks code that expects only a single persname -->
+     <!--
+         Multi persname in origination, breaks code that expects only a single persname.
+         
+         Also has bioghist/head, which is thrown out as of Oct 23 2014.
+
+         Very exciting, generates .c01 and .c02 
+         
+         less cpf_qa/aao/asu_az_state_university/bernasconi.c01.xml
+         less cpf_qa/aao/asu_az_state_university/bernasconi.c02.xml
+     -->
      <i n="158">findingAids/aao/asu_az_state_university/bernasconi.xml</i>
 
-     <!-- some bug in rawExtract causes multiple <rawExtract> elements, breaks functions expecting a single string. -->
-     <i n="159">findingAids/ahub/soas/196.xml</i>
+     <!--
+         Ignore. Can't find soas in the new ahub data.
+         some bug in rawExtract causes multiple <rawExtract> elements, breaks functions expecting a single string.
+         <i n="159">findingAids/ahub/soas/196.xml</i>
+     -->
 
-     <!-- non url text in a url failed jing validation -->
+     <!--
+         non url text in a url failed jing validation
+     -->
      <i n="160">findingAids/syru/cameron_k.xml</i>
 
      <!--
@@ -489,35 +934,144 @@ list/item
          entity reference. Unclear if the problem is geogname or date.
      -->
      <i n="161">findingAids/umi/bentley/osborncs.xml</i>
+
+     <!--
+         extended saxon says: [Fatal Error] :1:67: The entity name must immediately follow the '&' in the
+         entity reference. Unclear if the problem is geogname or date.
+         
+         Also:
+         
+         Failure to recognize non-standard date resulted in date truncation.
+         
+         file: cpf_qa/umi/bentley/withing.r019.xml
+         mismatch:  orig: 1823 1896
+         mismatch: final: 1823
+         orig: Brady, Mathew B., 1823 (ca.)-1896.
+         final: Brady, Mathew B., 1823
+         
+     -->
      <i n="162">findingAids/umi/bentley/withing.xml</i>
 
      <!-- 
-          <normalized>Great BritainHistoryPuritan Revolution, 1642-1660</normalized>
-     -->
-     <i n="163">findingAids/ahub/gulsc/1080_2002.xml</i>
+          Ignore. Can't find this file in the new ahub data.
 
-     <!-- logs/nwda.log:geog1: <normalized>Hoquiam (Wash.)$vPhotographs</normalized> -->
+          <geogname source="lcsh" role="subject">
+          <emph altrender="a">Great Britain</emph>
+          <emph altrender="x">History</emph>
+          <emph altrender="y">Puritan Revolution, 1642-1660</emph>
+          </geogname>
+          
+          <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+          <placeEntry>Great Britain- -History- -Puritan Revolution, 1642-1660</placeEntry>
+          </place>
+          
+          Maybe had a bug that lost spaces during concatenation, this from the (older) log file:
+          <normalized>Great BritainHistoryPuritan Revolution, 1642-1660</normalized>
+          
+          Log file should say (dash dash changed here to - -):
+          geog1: geogx: <normalized>Great Britain- -History- -Puritan Revolution, 1642-1660</normalized>
+          
+          Actual data should say: (Cant' have dash dash in a comment, changed to "- -".)
+          <placeEntry>Great Britain- -History- -Puritan Revolution, 1642-1660</placeEntry>
+          
+          less cpf_qa/ahub/gulsc/1080_2002.c01.xml
+          <i n="163">findingAids/ahub/gulsc/1080_2002.xml</i>
+     -->
+
+     <!--
+         Bad data, no workaround in the CFP code.
+
+         logs/nwda.log:geog1: <normalized>Hoquiam (Wash.)$vPhotographs</normalized>
+         
+         <subject source="lcsh" encodinganalog="650" rules="scm">Indians of
+         North America$zWashington (State)$vPhotographs</subject>
+         <subject source="lcsh" encodinganalog="650" rules="scm">Lumbering$zWashington (State)$vPhotographs</subject>
+         <subject>Hops$xHarvesting$zWashington (State)$vPhotographs</subject>
+         
+
+         <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+            <term>Indians of
+                         North America$zWashington (State)$vPhotographs</term>
+         </localDescription>
+         <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+            <term>Lumbering$zWashington (State)$vPhotographs</term>
+         </localDescription>
+         <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+            <term>Hops$xHarvesting$zWashington (State)$vPhotographs</term>
+         </localDescription>
+         
+         
+         Also, should have a <function> as a positive QA check:
+
+         <function localType="http://socialarchive.iath.virginia.edu/control/term#DerivedFromRole">
+            <term>Photographer</term>
+         </function>
+
+         less cpf_qa/nwda/university_of_washington_libraries/WAUPHColl034.c01.xml
+     -->
      <i n="164">findingAids/nwda/university_of_washington_libraries/WAUPHColl034.xml</i>
 
 
-     <!-- exercise geog2 and geog3 -->
+     <!--
+         exercise geog2:
+     -->
      <i n="165">findingAids/cjh/ajhs-ead-snac/109153_RobisonFamily.xml</i>
+
+     <!--
+         exercise geog2 and geog3
+         
+         geog1: geogx: <normalized>Europe</normalized>
+         geog1: geogx: <normalized>Great Britain</normalized>
+         geog1: geogx: <normalized>Italy</normalized>
+         geog1: geogx: <normalized>United States</normalized>
+         cis1: geog2: geogx: <normalized>England</normalized>
+         cis1: geog2: geogx: <normalized>London, England</normalized>
+         cis2: geog3: geogx: <normalized>New York, N.Y.</normalized>
+         cis2: geog3: geogx: <normalized>New York, N.Y.</normalized>
+         cis1: geog2: geogx: <normalized>Washington, D.C.</normalized>
+         cis1: geog2: geogx: <normalized>Baltimore, Md.</normalized>
+         cis2: geog3: geogx: <normalized>Poughkeepsie, N.Y.</normalized>
+         cis2: geog3: geogx: <normalized>New York, N.Y.</normalized>
+
+         less cpf_qa/lc/ms997010.c01.xml
+     -->
      <i n="166">findingAids/lc/ms997010.xml</i>
+
+     <!--
+         Skipped in auto QA.
+
+         exercise geog2 and/or geog3
+     -->
      <i n="167">findingAids/harvard/sch00098.xml</i>
      <i n="168">findingAids/harvard/sch01256.xml</i>
 
 
-     <!-- 5 digit dates -->
+     <!--
+         Skipped in auto QA.
+
+         5 digit dates
+     -->
      <i n="169">findingAids/oac/clloy/freeman.xml</i>
 
-     <!-- Did not validate due to bad code or debug code slipped in. Make sure it is gone. -->
-     <i n="170">findingAids/howard/Coll._113-ead.xml</i>
-     <i n="171">findingAids/howard/Coll._209-eadxml</i>
+     <!--
+         Skipped in auto QA.
 
-     <!-- This has a geoname that can't be looked up by Robbie's code. Should be handled by geo.xsl, but we sanity check as well. -->
+         Did not validate due to bad code or debug code slipped in. Make sure it is gone.
+     -->
+     <i n="170">findingAids/howard/Coll._113-ead.xml</i>
+
+     <!--
+         Skipped in auto QA.
+
+         This has a geoname that can't be looked up by Robbie's code. Should be handled by geo.xsl, but we sanity check as well.
+     -->
      <i n="172">findingAids/lc/ms001037.xml</i>
 
-     <!-- Must copy both date and dateRange for dateset -->
+     <!--
+         Skipped in auto QA.
+
+         Must copy both date and dateRange for dateset
+     -->
      <i n="173">findingAids/lc/ms997003.xml</i>
 
      <!--
@@ -526,8 +1080,733 @@ list/item
          $relevantBioghist/bioghist and generated a biogHist regardless.
 
          Now there's a test in relevantBioghist.
+         
+         Incidentally, this also has number of <origination> persnames, so there are many .cxx files.
+         
+         less cpf_qa/aps/Mss.B.B121-ead.c01.xml
      -->
      <i n="174">findingAids/aps/Mss.B.B121-ead.xml</i>
 
- </group>
+     <!--
+         Skipped in auto QA.
+
+         Daniel says origination not processed for this, but I can't find an <origination> element.
+         
+         Oct 23 2014 File has moved? Commented out until the file location is fixed.
+     -->
+     <!-- <i n="175">findingAids/bnf/ccfr/FRCGMNOV-751055117-01a.xml</i> -->
+
+     <!--
+         At one point there was a bug that controlaccess/persname not processed. Fixed.
+         
+         less cpf_qa/anfra/FRCAC00APH_00000006.r001.xml
+     -->
+     <i n="176">findingAids/anfra/FRCAC00APH_00000006.xml</i>
+
+     <!-- 
+          Skipped in auto QA.
+          
+          (only when inc_orig=1?) 7700 names breaks saxon, java.lang.ArrayIndexOutOfBoundsException: -32768
+     -->
+     <i n="177">findingAids/ccfr/FRCGMBPF-693836101-03a.xml</i>
+
+     <!-- 
+          Old: unl has no archdesc/did/repository so we have to workaround using the unitit@repositorycode.
+          
+          New: We appear to be using unittitle and unitdate.
+          
+          Why don't we use the prefercite?
+          
+          <unittitle audience="external" label="Title:" encodinganalog="245$a">Lowry Wimberly, Papers</unittitle>
+          <origination audience="external" label="Creator:">
+          <persname encodinganalog="100">Wimberly, Lowry Charles, 1890-1959</persname>
+          </origination>
+          <unitdate label="Dates:"
+          type="inclusive"
+          encodinganalog="260"
+          normal="1878/1982"
+          era="ce"
+          calendar="gregorian">1877-1982</unitdate>
+
+          <unitid label="Collection Number:"
+          encodinganalog="099"
+          countrycode="us"
+          repositorycode="NbU">RG 12-10-50</unitid>
+          
+          <prefercite encodinganalog="524">
+          <head>Preferred Citation:</head>
+          <p>Lowry Wimberly, Papers (RG 12-10-50). Archives &amp; Special Collections, University of Nebraska—Lincoln Libraries.</p>
+          </prefercite>
+          
+          <citation>From the guide to the Lowry Wimberly, Papers, 1877-1982</citation>
+     -->
+     <i n="178">findingAids/unl/RG12-10-50-wimberly-unl.xml</i>
+
+     <!--
+         Empty <part> due to <emph>
+         
+         <corpname encodinganalog="110$a">
+         <emph render="italic">Harvard Crimson</emph>
+         </corpname>
+         
+         <ead>
+         <archdesc>
+         <dsc>
+         <c01>
+          <c03 id="mferd11e3210" level="file" altrender="xsl.fo_pdfspacer_mu">
+            <did>
+              <container type="box-folder">7/12</container>
+              <unittitle encodinganalog="245$a" id="mu001001_General_Correspondence_CL10031001_D3_24">
+                <corpname encodinganalog="110$a">
+                  <emph render="italic">Harvard Crimson</emph>
+                </corpname>
+              </unittitle>
+            </did>
+          </c03>
+
+
+         
+         xlf /data/source/findingAids/lc/mu001001.xml
+         
+         less cpf_qa/lc/mu001001.c01.xml
+
+         <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xlink:type="simple"
+                      xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody"
+                      xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#correspondedWith">
+            <relationEntry/>
+            <descriptiveNote>
+               <p>
+                  <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">lc/mu001001.r095</span>
+               </p>
+            </descriptiveNote>
+         </cpfRelation>
+         
+         less cpf_qa/lc/mu001001.r095.xml
+
+The buggy output:
+
+   <cpfDescription>
+      <identity>
+         <entityType>corporateBody</entityType>
+         <nameEntry xml:lang="en-Latn">
+            <part/>
+            <authorizedForm>lc</authorizedForm>
+         </nameEntry>
+      </identity>
+
+The correct output:
+
+   <cpfDescription>
+      <identity>
+         <entityType>corporateBody</entityType>
+         <nameEntry xml:lang="en-Latn">
+            <part>Harvard Crimson</part>
+            <authorizedForm>oac</authorizedForm>
+         </nameEntry>
+         </identity>
+         
+         
+         less cpf_qa/lc/mu001001.c01.xml
+         <part>Fine, Irving, 1914-1962</part>
+         <relationEntry>Schuman, William, 1910-1992</relationEntry> correspondedWith .r007
+         <relationEntry>Ballantine, Edward</relationEntry> associatedWith .r008
+         
+         
+         less cpf_qa/lc/mu001001.r007.xml
+         <part>Schuman, William, 1910-1992</part>
+         <relationEntry>Fine, Irving, 1914-1962</relationEntry> correspondedWith .c01
+
+         less cpf_qa/lc/mu001001.r008.xml
+         <part>Ballantine, Edward</part>
+         <relationEntry>Fine, Irving, 1914-1962</relationEntry> associatedWith .c01
+
+     -->
+     <i n="179">findingAids/lc/mu001001.xml</i>
+     
+     <!--
+         controlaccess/persname has "\-\-Correspondence." which should be normalized out, and should be used to
+         create a correspondedWith relationship.
+         
+         less cpf_qa/lc/ms012055.c01.xml         
+         
+         <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xlink:type="simple"
+                      xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person"
+                      xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#correspondedWith">
+            <relationEntry>Gage, Thomas, 1721-1787</relationEntry>
+            <descriptiveNote>
+               <p>
+                  <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">lc/ms012055.r007</span>
+               </p>
+            </descriptiveNote>
+         </cpfRelation>
+
+
+         less cpf_qa/lc/ms012055.r007.xml
+
+   <cpfDescription>
+      <identity>
+         <entityType>person</entityType>
+         <nameEntry xml:lang="en-Latn">
+            <part>Gage, Thomas, 1721-1787</part>
+            <authorizedForm>oac</authorizedForm>
+         </nameEntry>
+      </identity>
+
+
+         <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xlink:type="simple"
+                      xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person"
+                      xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith">
+            <relationEntry>Carter, Clarence Edwin, 1881-1961</relationEntry>
+            <descriptiveNote>
+               <p>
+                  <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">lc/ms012055.c01</span>
+               </p>
+            </descriptiveNote>
+         </cpfRelation>
+
+
+     -->
+     <i n="180">findingAids/lc/ms012055.xml</i>
+
+     <!--
+         <unittitle label="Title">
+         <title linktype="simple" inline="true">Daily Morning Ape</title>
+         </unittitle>
+
+         <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink"
+         xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource"
+         xlink:type="simple"
+         xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf"
+         xlink:href="http://www.oac.cdlib.org/ark:/13030/tf687004h0">
+         <relationEntry/>
+         
+         xlf /data/source/findingAids/oac/chs/ms_3598.xml
+         less oac_cpf_final/oac/chs/ms_3598.c01.xml
+     -->
+     <i n="181">findingAids/oac/chs/ms_3598.xml</i>
+        
+     <!-- 
+          Changed double hyphen to \-\- for comment compatibility.
+
+          Bad:
+          <controlaccess>
+          <head>Contributors</head>
+          <persname encodinganalog="700" source="lcnaf">Knowles, Alison, \-\- correspondent</persname>
+          
+          xlf /data/source/findingAids/oac/ucsd/spcoll/mss0128.xml
+          
+          file: oac_cpf_final/oac/ucsd/spcoll/mss0128.r008.xml
+          part: Knowles, Alison, correspondent
+          ead_entity: Knowles, Alison, \-\- correspondent
+          
+         -->
+     <i n="182">findingAids/oac/ucsd/spcoll/mss0128.xml</i>
+
+     <!--
+         Use this to compare to the broken example above.
+
+         Good:
+         <controlaccess>
+         <head>Contributors</head>
+         <persname encodinganalog="700" source="lcnaf">Poulin, A. \-\- correspondent</persname>
+         
+         xlf /data/source/findingAids/oac/ucsd/spcoll/mss0631.xml
+         
+         file: oac_cpf_final/oac/ucsd/spcoll/mss0631.r004.xml
+         part: Poulin, A.
+         ead_entity: Poulin, A. \-\- correspondent
+     -->
+     <i n="183">findingAids/oac/ucsd/spcoll/mss0631.xml</i>
+
+     <!--
+         Daniel's list of test names, merged into an EAD file.
+         
+         less cpf_qa/test/test_names.c72.xml
+
+   <cpfDescription>
+      <identity>
+         <entityType>person</entityType>
+         <nameEntry xml:lang="en-Latn">
+            <part>Inversedate, Barney, 1874-1830</part>
+            <authorizedForm>oac</authorizedForm>
+         </nameEntry>
+      </identity>
+      <description>
+         <existDates localType="http://socialarchive.iath.virginia.edu/control/term#SuspiciousDate">
+            <dateRange>
+               <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth"
+                         standardDate="1874">1874</fromDate>
+               <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
+                       standardDate="1830">1830</toDate>
+            </dateRange>
+         </existDates>
+      </description>
+      
+      
+      less cpf_qa/test/test_names.c73.xml
+
+   <cpfDescription>
+      <identity>
+         <entityType>person</entityType>
+         <nameEntry xml:lang="en-Latn">
+            <part>Onlyfourteen, Barney, 1870-1884</part>
+            <authorizedForm>oac</authorizedForm>
+         </nameEntry>
+      </identity>
+      <description>
+         <existDates localType="http://socialarchive.iath.virginia.edu/control/term#SuspiciousDate">
+            <dateRange>
+               <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth"
+                         standardDate="1870">1870</fromDate>
+               <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
+                       standardDate="1884">1884</toDate>
+            </dateRange>
+         </existDates>
+         
+         less cpf_qa/test/test_names.c20.xml
+         
+   <cpfDescription>
+      <identity>
+         <entityType>person</entityType>
+         <nameEntry xml:lang="en-Latn">
+            <part>Nagel, Louis, fl. ca. 1844-ca. 1873</part>
+            <authorizedForm>oac</authorizedForm>
+         </nameEntry>
+      </identity>
+      <description>
+         <existDates>
+            <dateRange>
+               <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Active"
+                         notBefore="1841"
+                         notAfter="1847"
+                         standardDate="1844">active approximately 1844</fromDate>
+               <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
+                       notBefore="1870"
+                       notAfter="1876"
+                       standardDate="1873">approximately 1873</toDate>
+            </dateRange>
+         </existDates>
+ 
+
+
+     -->
+     <i n="184">findingAids/test/test_names.xml</i>
+     <i n="185">findingAids/test/test_names_controlaccess.xml</i>
+
+     <!--
+         Perhaps a browser cache issue. Lacked existDates, but looks fine in /data/extract and XTF.
+         
+         less cpf_qa/lc/ms012042.r006.xml
+     --> 
+     <i n="186">findingAids/lc/ms012042.xml</i>
+
+     <!--
+         Example of date in the future. Should be flagged suspicious and not show up in the ouput.
+         
+         xlf /data/source/findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVELCA7a4_161.xml
+         
+         <persname role="subject" encodinganalog="600" rules="dacs">Lock, Otto,
+         1913-4919 </persname>
+         
+         
+         less nwda_cpf_final/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVELCA7a4_161.r008.xml
+         
+         <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
+         standardDate="4919">4919</toDate>
+         
+         /lv1/home/twl8n/ead2cpf_pack/nwda_cpf_final/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVELCA7a4_161.r008.xml:53:44: error: bad value for attribute "standardDate"
+     -->
+     
+     <i n="187">findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVELCA7a4_161.xml</i>
+
+     <!--
+         xlf /data/source/findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVSIEmss_22.xml
+         less cpf_qa/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVSIEmss_22.c01.xml
+         
+         EAD:
+
+         <function encodinganalog="657">
+         </function>
+         
+         CPF (Before the bug fix):
+         
+         <function>
+         <term/>
+         </function>
+         
+         Also as a positive QA test, has good occupation and subject values:
+         
+         <description>
+         <occupation>
+         <term>Farmers</term>
+         </occupation>
+         <occupation>
+         <term>Copper mines and mining</term>
+         </occupation>
+         <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+         <term> Sweden\-\-Emigration and emigration</term>
+         </localDescription>
+     -->
+     <i n="188">findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVSIEmss_22.xml</i>
+
+     <!-- 
+          xlf /data/source/findingAids/nwda/lewis_and_clark_college/OLPb039PSA.xml
+          less cpf_qa/nwda/lewis_and_clark_college/OLPb039PSA.c01.xml
+          
+          <controlaccess>
+          <subject encodinganalog="650">
+          <?xm-replace_text {Subject term}?>
+          </subject>
+          <subject encodinganalog="650">
+          <?xm-replace_text {Subject term}?>
+          </subject>
+          <subject encodinganalog="650">
+          <?xm-replace_text {Subject term}?>
+          </subject>
+          </controlaccess>
+          <controlaccess>
+          <subject source="nwda" altrender="nodisplay" encodinganalog="690">Colleges and Universities</subject>
+          </controlaccess>
+          </controlaccess>
+          
+          Before the fix:
+
+          <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+          <term/>
+          </localDescription>
+          <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+          <term/>
+          </localDescription>
+          <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+          <term/>
+          </localDescription>
+          <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+          <term>Colleges and Universities</term>
+          </localDescription>
+          
+          
+          
+          After the fix:
+          
+          <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+          <term>Colleges and Universities</term>
+          </localDescription>
+     -->
+     <i n="189">findingAids/nwda/lewis_and_clark_college/OLPb039PSA.xml</i>
+
+
+     <!--
+         xlf /data/source/findingAids/nwda/university_of_alaska_fairbanks/AkUV5_59.xml
+         less cpf_qa/nwda/university_of_alaska_fairbanks/AkUV5_59.c01.xml
+         
+         EAD:
+
+         <controlaccess>
+         <occupation encodinganalog="656">
+         <?xm-replace_text {Occupation term}?>
+         </occupation>
+         <occupation encodinganalog="656">
+         <?xm-replace_text {Occupation term}?>
+         </occupation>
+         </controlaccess>
+         
+         CPF before fix:
+         
+         <description>
+         <function>
+         <term/>
+         </function>
+         <function>
+         <term/>
+         </function>
+         <occupation>
+         <term/>
+         </occupation>
+         <occupation>
+         <term/>
+         </occupation>
+         <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+         <term>Alaska
+         Highway\-\-1950s\-\-Photographs</term>
+         </localDescription>
+         
+         CPF after fix:
+         <description>
+         <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+         <term>Alaska
+         Highway\-\-1950s\-\-Photographs</term>
+         </localDescription>
+
+         
+
+     -->
+     <i n="190">findingAids/nwda/university_of_alaska_fairbanks/AkUV5_59.xml</i>
+
+     <!--
+         Empty relationEntry even though unittitle looks fine.
+     -->
+     <i n="191">findingAids/vah/vipets00057.xml</i>
+
+     <!--
+         Oct 16 2014: note moved to nwda_missing.
+
+         date\-\-correspondence not properly normalized.
+         <persname role="subject" encodinganalog="600" source="lcnaf" normal="1908/1973">Johnson, Lyndon B. (Lyndon Baines), 1908-1973\-\-Correspondence</persname>
+     -->
+     <i n="192">findingAids/nwda_missing/oregon_historical_society_research_library/OHYMSS193.xml</i>
+
+     <!--
+         Tests for '-correspondence' in all the usual forms.
+         
+         Milroy, Mary Armitage - Correspondence
+         Cobleigh, William-Correspondence
+         Shearer, Charles T. -Correspondence
+         Brown, W. C. -(William Carey), -1854-1939-Correspondence
+     -->
+     <i n="193">findingAids/nwda/oregon_historical_society_research_library/OHYMSS2520.xml</i>
+     <i n="194">findingAids/nwda/montana_state_university/MZFCollection2124.xml</i>
+     <i n="195">findingAids/nwda/montana_state_university/MZFCollection2004.xml</i>
+     <i n="196">findingAids/nwda/montana_state_university/MZFCollection0216.xml</i>
+
+     <!--
+         Has unicode 2014 in the original record. After cleaning with clean.pl, the 2014 characters will be
+         hyphens.
+
+         xlf /data/source/findingAids/nwda/oregon_historical_society_research_library/OHYMSS1609.xml
+         
+         <persname role="subject" encodinganalog="600" rules="aacr2" source="local">Huber, Oskar—Correspondence</persname>
+         
+         less /data/extract/ead_nwda/nwda/oregon_historical_society_research_library/OHYMSS1609.r005.xml
+         
+         <filename>/data/source/findingAids/nwda/oregon_historical_society_research_library/OHYMSS1609.xml</filename>
+         <ead_entity en_type="persname"
+         role="subject"
+         encodinganalog="600"
+         rules="aacr2"
+         source="local">Huber, Oskar—Correspondence</ead_entity>
+
+         <nameEntry xml:lang="en-Latn">
+         <part>Huber, Oskar—Correspondence</part>
+         <authorizedForm>nwda</authorizedForm>
+         </nameEntry>
+     -->
+     <i n="197">findingAids/nwda/oregon_historical_society_research_library/OHYMSS1609.xml</i>
+
+     <!-- 
+          Missing text from eventgrp around "1922".
+     -->
+     <i n="198">findingAids/nwda/oregon_state_university_libraries_special_collections_and_archives_research_center/OREpauling.xml</i>
+
+
+     <!--
+         Unparsed date.
+
+         <persname>Daingerfield, Joseph F., 1800 or 1-1840.</persname>
+     -->
+     <i n="199">findingAids/vah/viw00036.xml</i>
+
+     <!-- 
+          Bug seems to be newline in the middle of date isn't detected and the second part of the date is truncated.
+          
+          unfixed date: Grigsby, Hugh Blair, 1806-
+          1881. , 
+          
+          <part>Grigsby, Hugh Blair, 1806-</part>
+          
+          <persname encodinganalog="700">Grigsby, Hugh Blair, 1806-
+          1881.</persname>
+     -->
+     <i n="200">findingAids/vah/viw00063.xml</i>
+
+     <!-- 
+          <origination label="creator">
+              <persname source="ingest">"A General Officer". Pawlings's Mills</persname>
+          </origination>
+          
+          <part>A General Officer. PawlingsMills</part>
+          
+          less aps_cpf_final/aps/Mss.B.F85inventory13-ead.r342.xml
+          
+          xlf /data/source/findingAids/aps/Mss.B.F85inventory13-ead.xml
+     -->
+     <i n="201">findingAids/aps/Mss.B.F85inventory13-ead.xml</i>
+
+     <!--
+         UIL always returns 200 for any URL, so must test for "Could not load Collection"
+     -->
+     <i n="202">findingAids/uil/nctesections_files_1817.xml</i>
+
+     <!--
+         Non-hyphen correspondence should *not* be cleaned, up, and this is an example of that case.
+
+         <origination label="Creator: ">
+         <persname encodinganalog="100" source="lcnaf">Foster, John Edward.</persname>
+         </origination>
+         
+         <persname encodinganalog="600" source="lcnaf">Foster, John Edward Correspondence.</persname>
+         
+         # The cpf has:
+         
+         <filename>/data/source/findingAids/syru/foster_je.xml</filename>
+         <ead_entity en_type="persname" encodinganalog="600" source="lcnaf">Foster, John Edward Correspondence.</ead_entity>
+     -->
+     <i n="203">findingAids/syru/foster_je.xml</i>
+
+     <!--
+         snac:containsFamily() fails if there is not \s after 'family'. 
+         et: person part: Pease family, of Frosterley, Co. Durham.
+         xlf /data/source/findingAids/ahub/f_5178.xml
+         normalFinal: Pease family, of Frosterley, Co. Durham.   type: regExed
+         <persname source="aacr2" encodinganalog="ukmarc600.30" authfilenumber="134">Pease family, of Frosterley, Co. Durham.</persname>
+     -->
+     <i n="204">findingAids/ahub/f_5178.xml</i>
+
+     <!--
+         There are at least a couple of ways that names with interesting date formats can trick snac:fixDatesRemoveParens().
+         The end result after the rest of normalization is a lone left paren in the name.
+         
+         /data/source/findingAids/ahub/f_13842.xml
+         
+         normalFinal: Riddell, William. Dr ( fl 1895-1913   type: regExed cpf: persname
+         
+         /data/source/findingAids/ahub/f_4188.xml
+         
+         <persname rules="ncarules">Henry Burgess the younger (fl 1737-1781), composer</persname>
+         
+         <part>Henry Burgess the younger (fl 1737-1781</part>
+
+         http://shannon.village.virginia.edu:8090/xtf/data/ead_ahub/ahub/f_4188.r114.xml
+         
+         Test nnnn-?nnnn
+
+         fixDatesRemoveParens   orig: Astorga, Emanuele d'. Baron ( 1680-? 1757) Composer
+         fixDatesRemoveParens result: Astorga, Emanuele d'. Baron, 1680-? 1757 Composer
+         stripStringAfterDateInPersname:   orig:Astorga, Emanuele d'. Baron, 1680-? 1757 Composer
+         stripStringAfterDateInPersname: result:Astorga, Emanuele d'. Baron, 1680-? 1757
+     -->
+
+     <i n="205">findingAids/ahub/f_13842.xml</i>
+     <i n="206">findingAids/ahub/f_4188.xml</i>
+
+     <!--
+         file: /data/extract/ead_afl/afl/177583_FTaSU1979010.r001.xml
+         mismatch:  orig: 1751 1842
+         mismatch: final: 1751
+         orig: Rolle of Stevenstone, John Rolle Baron bap.1751-d.1842
+         final: Rolle of Stevenstone, John Rolle Baron bap. 1751-
+     -->
+     <i n="207">findingAids/afl/177583_FTaSU1979010.xml</i>
+
+     <!--
+         Tests snac:stripStringAfterDateInPersname "d. nnnn"
+
+         file: /data/extract/ead_ahub/ahub/f_20302.r002.xml
+         mismatch:  orig: 1883 1865
+         mismatch: final: 1883
+         orig: Whyte-Melville John d. 1883 Golfer, Grand Master of the Order of the Temple, 1865-83
+         final: Whyte-Melville John d. 1883
+     -->
+     <i n="208">findingAids/ahub/f_20302.xml</i>
+
+     <!--
+         Tests snac:stripStringAfterDateInPersname "fl nnnn - d. nnnn"
+         file: /data/extract/ead_ahub/ahub/f_20054.r001.xml
+         mismatch:  orig: 1580 1634
+         mismatch: final: 1580
+         orig: Malcolm John fl 1580-d.1634 professor of philosophy
+         final: Malcolm John fl 1580-
+     -->
+     <i n="209">findingAids/ahub/f_20054.xml</i>
+
+
+     <!--
+         Tests date with out - so probably nothing should happen because it isn't a date as far as all our
+         date code is concerned.
+         
+         file: /data/extract/ead_ahub/ahub/f_6946.c01.xml
+         mismatch:  orig: 1919 1992
+         mismatch: final: 1919
+         orig: Kipling, Charlotte. ( b.1919 d.1992)
+         final: Kipling, Charlotte. ( b. 1919
+     -->
+     <i n="210">findingAids/ahub/f_6946.xml</i>
+
+
+     <!--
+         Test the mistake illustrated below. Should not truncate the "fl nnnn". This was probably due to the
+         regex matching "fl." but not plain "fl" without the dot.
+
+         file: /data/extract/ead_ahub/ahub/f_4306.r013.xml
+         mismatch:  orig: 1903 1964
+         mismatch: final: 1903
+         orig: Slater Harriet 1903- fl 1964 MP
+         final: Slater Harriet 1903-
+     -->
+     <i n="211">findingAids/ahub/f_4306.xml</i>
+     
+     
+     <!-- 
+          Multi names in a single field used to end badly.
+          
+          file: /data/extract/ead_ahub/ahub/f_20516.c01.xml
+          mismatch:  orig: 1881 1964 1879 1961 1891
+          mismatch: final: 1881 1964
+          orig: Bell, (Arthur) Clive (Heward) (1881-1964); Bell, Vanessa (1879-1961); Jackson, Maria (d. 1891?)
+          final: Bell, (Arthur) Clive (Heward), 1881-1964
+          
+     -->
+     <i n="212">findingAids/ahub/f_20516.xml</i>
+
+     <!--
+
+         fixDatesRemoveParens   orig: Steen, Marguerite. ( 1894 - 1975)
+         fixDatesRemoveParens   warn: Steen, Marguerite. ( 1894 - 1975)
+     -->
+     <i n="213">findingAids/ahub/f_22905.xml</i>
+
+     <!--
+         After improving date parsing, have a NaN error converting date to number.
+         
+         less cpf_qa/ahub/f_24292.c01.xml
+         <part>Elsley - Marianne - c1923-2009</part>
+         
+         <dateRange>
+             <fromDate/>
+             <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
+                     standardDate="2009">2009</toDate>
+         </dateRange>
+         
+         fn: /data/source/findingAids/ahub/f_24292.xml
+         ...
+         Error on line 2638 of eadToCpf.xsl:
+         XTDE0980: Cannot convert supplied value to an integer. NaN
+         at xsl:call-template name="existDateFromPersname" (file:/lv1/home/twl8n/ead2cpf_pack/eadToCpf.xsl#1073)
+         at xsl:call-template name="tpt_process" (file:/lv1/home/twl8n/ead2cpf_pack/eadToCpf.xsl#1692)
+         Transformation failed: Run-time errors were reported
+     -->
+     <i n="213">findingAids/ahub/f_24292.xml</i>
+
+     <!--
+         
+         Bug related to testing . for xpath $dateStringAnalyzeResultsTwo/fromDate when fromDate contains
+         <normalizedValue> and <value> which means value-of . is always two dates. Testing . only worked due
+         to a side effect of multi-value processing.
+         
+         findingAids/cjh/asf-ead-snac/554338_Kohen.xml
+         
+         less cpf_qa/cjh/asf-ead-snac/554338_Kohen.r005.xml
+         
+         Error on line 2629 of eadToCpf.xsl:
+         FORG0001: Cannot convert string to double: "16101610?"
+         at xsl:call-template name="existDateFromPersname" (file:/lv1/home/twl8n/ead2cpf_pack/eadToCpf.xsl#1066)
+         at xsl:call-template name="tpt_process" (file:/lv1/home/twl8n/ead2cpf_pack/eadToCpf.xsl#1692)
+         Transformation failed: Run-time errors were reported
+     -->
+     <i n="214">findingAids/cjh/asf-ead-snac/554338_Kohen.xml</i>
+     
+     
+</group>
 </list>

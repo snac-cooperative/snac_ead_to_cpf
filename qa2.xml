@@ -8,6 +8,152 @@
  <!--  Number of groups: 1 Group size: 500  -->
  <group n="1">
 
+     <i n="214">findingAids/cjh/asf-ead-snac/554338_Kohen.xml</i>
+     <i n="213">findingAids/ahub/f_24292.xml</i>
+
+     <!-- <i n="35">findingAids/ahub/f_2.xml</i> -->
+     <!-- <i n="57">findingAids/aps/Mss.649.962.Sh6m-ead.xml</i> -->
+
+     <!-- <i n="213">findingAids/ahub/f_22905.xml</i> -->
+     <!-- <i n="212">findingAids/ahub/f_20516.xml</i> -->
+
+
+     <!-- <i n="206">findingAids/ahub/f_4188.xml</i> -->
+
+     <!-- <i n="207">findingAids/afl/177583_FTaSU1979010.xml</i> -->
+     <!-- <i n="205">findingAids/ahub/f_13842.xml</i> -->
+     <!-- <i n="204">findingAids/ahub/f_5178.xml</i> -->
+
+     <!-- <i n="203">findingAids/syru/foster_je.xml</i> -->
+     <!-- <i n="208">findingAids/ahub/f_20302.xml</i> -->
+     <!-- <i n="209">findingAids/ahub/f_20054.xml</i> -->
+     <!-- <i n="210">findingAids/ahub/f_6946.xml</i> -->
+     <!-- <i n="211">findingAids/ahub/f_4306.xml</i> -->
+
+     <!-- <i n="202">findingAids/uil/nctesections_files_1817.xml</i> -->
+
+     <!--
+         Multi persname in origination, breaks code that expects only a single persname.
+         Also has bioghist/head.
+     -->
+     <!-- <i n="158">findingAids/aao/asu_az_state_university/bernasconi.xml</i> -->
+
+     <!-- <i n="200">findingAids/vah/viw00063.xml</i> -->
+
+     <!--
+         Daniel's list of test names, merged into an EAD file.
+     -->
+     <!-- <i n="184">findingAids/test/test_names.xml</i> -->
+     <!-- <i n="185">findingAids/test/test_names_controlaccess.xml</i> -->
+
+
+     <!-- <i n="198">findingAids/nwda/oregon_state_university_libraries_special_collections_and_archives_research_center/OREpauling.xml</i> -->
+
+     <!-- <i n="192">findingAids/nwda/oregon_historical_society_research_library/OHYMSS193.xml</i> -->
+
+     <!-- <i n="193">findingAids/test/test_OHYMSS193.xml</i> -->
+
+     <!-- <i n="191">findingAids/vah/vipets00057.xml</i> -->
+
+     <!-- <i n="193">findingAids/nwda/oregon_historical_society_research_library/OHYMSS2520.xml</i> -->
+     <!-- <i n="194">findingAids/nwda/montana_state_university/MZFCollection2124.xml</i> -->
+     <!-- <i n="195">findingAids/nwda/montana_state_university/MZFCollection2004.xml</i> -->
+     <!-- <i n="196">findingAids/nwda/montana_state_university/MZFCollection0216.xml</i> -->
+
+     <!-- <i n="191">findingAids/vah/vipets00054.xml</i> -->
+
+     <!-- <i n="189">findingAids/nwda/lewis_and_clark_college/OLPb039PSA.xml</i> -->
+     <!-- <i n="188">findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVSIEmss_22.xml</i> -->
+     <!-- <i n="190">findingAids/nwda/university_of_alaska_fairbanks/AkUV5_59.xml</i> -->
+
+     <!-- <i n="187">findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVELCA7a4_161.xml</i> -->
+
+
+     <!-- <i n="178">findingAids/unl/RG12-10-50-wimberly-unl.xml</i> -->
+     <!-- <i n="90">findingAids/uchic/ICU.SPCL.STARRMEX.xml</i> -->
+     <!-- <i n="182">findingAids/oac/ucsd/spcoll/mss0128.xml</i> -->
+     <!-- <i n="183">findingAids/oac/ucsd/spcoll/mss0631.xml</i> -->
+
+     <!-- <i n="181">findingAids/oac/chs/ms_3598.xml</i> -->
+
+     <!--
+         controlaccess/persname has "\-\-Correspondence." which should be normalized out, and should be used to
+         create a correspondedWith relationship.
+     -->
+     <!-- <i n="180">findingAids/lc/ms012055.xml</i> -->
+     <!-- <i n="179">findingAids/lc/mu001001.xml</i> -->
+     <!-- <i n="28">findingAids/harvard/trc00032.xml</i> -->
+     <!-- <i n="26">findingAids/umi/clementsmss/davised_final.xml</i> -->
+
+     <!--
+         <repository encodinganalog="852" label="Repository">
+         <corpname/>
+         </repository>
+         
+         We do not currently use prefercite:
+
+         <prefercite>
+         <head>Preferred Citation</head>
+         <p>New Mexico Historic American Building Survey (HABS), Fray Angélico Chávez History Library, Santa Fe, New Mexico, USA</p>
+         </prefercite>
+         
+         Some records have missing repo info, and we don't want empty () at the end of the
+         citation.
+         
+         Old code bug with "()" at the end fixed Sep 9 2014:
+         <citation>From the guide to the New Mexico Historic American Building Survey (HABS), 1930-1940, ()</citation>
+         
+         less cpf_qa/rmoa/nmsmac418-s.c01.xml
+     -->
+     <!-- <i n="86">findingAids/rmoa/nmsmac418-s.xml</i> -->
+
+     <!--
+         Unknown why this was originally added to QA, but on Sep 8 2014 discovered error in <citation> "PapersMary".
+         
+         xlf /data/source/findingAids/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.xml
+         less cpf_qa/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.c01.xml
+     -->
+     <!-- <i n="29">findingAids/nwda/university_of_alaska_fairbanks/UAFBLUSUAFV3_32.xml</i> -->
+
+
+     <!--
+         Has <p>text<emph>Soledad</emph>more text...</p>. and <emph> is removed.
+         
+         xlf /data/source/findingAids/oac/cspr/first_theatre.xml
+         less cpf_qa/oac/cspr/first_theatre.c01.xml
+     -->
+     <!-- <i n="9">findingAids/oac/cspr/first_theatre.xml</i> -->
+
+     <!-- repository/corpname with text() and subarea -->
+     <!-- <i n="95">findingAids/uks/ksrl.sc.holyromanempire.xml</i> -->
+
+     <!-- has text and nodes inside <repository> -->
+     <!-- <i n="88">findingAids/syru/queen_vic.xml</i> -->
+
+     <!-- repository parts with hyphen -->
+     <!-- <i n="92">findingAids/ude/minimal_ead/mss0272.xml</i> -->
+
+
+
+     <!-- 
+          With inc_orig=1 long EAD and/or 7700 names breaks saxon, java.lang.ArrayIndexOutOfBoundsException: -32768
+          
+          This file is 2.4M in size, and trying to output all of that in a single variable crashes Saxon.
+     -->
+     <!-- <i n="177">findingAids/ccfr/FRCGMBPF-693836101-03a.xml</i> -->
+
+     <!-- 
+          unl has no archdesc/did/repository so we have to workaround using the unitit@repositorycode.
+     -->
+     <!-- <i n="178">findingAids/unl/RG12-10-50-wimberly-unl.xml</i>  -->
+
+
+     <!--
+         controlaccess/persname not processed
+     -->
+     <!-- <i n="176">findingAids/anfra/FRCAC00APH_00000006.xml</i> -->
+
+
      <!--
          No bioghist, should be no biogHist in CPF. In the old days, relevantBioghist did a for-each on
          $otherData/eac:bioghist and then descriptionOriginationEntity did a for-each on
@@ -15,22 +161,20 @@
 
          Now there's a test in relevantBioghist.
      -->
-     <i n="174">findingAids/aps/Mss.B.B121-ead.xml</i>
+     <!-- <i n="174">findingAids/aps/Mss.B.B121-ead.xml</i> -->
 
 
      <!-- exercise geog2 and geog3, also unittitle and unitdate in citation -->
-     <i n="165">findingAids/cjh/ajhs-ead-snac/109153_RobisonFamily.xml</i>
-     <i n="166">findingAids/lc/ms997010.xml</i>
-     <i n="167">findingAids/harvard/sch00098.xml</i>
-     <i n="168">findingAids/harvard/sch01256.xml</i>
+     <!-- <i n="165">findingAids/cjh/ajhs-ead-snac/109153_RobisonFamily.xml</i> -->
+     <!-- <i n="166">findingAids/lc/ms997010.xml</i> -->
+     <!-- <i n="167">findingAids/harvard/sch00098.xml</i> -->
+     <!-- <i n="168">findingAids/harvard/sch01256.xml</i> -->
 
      <!-- Must copy both date and dateRange for dateset -->
      <!-- <i n="173">findingAids/lc/ms997003.xml</i> -->
 
-
      <!-- Did not validate due to bad code or debug code slipped in. Make sure it is gone. -->
      <!-- <i n="170">findingAids/howard/Coll._113-ead.xml</i> -->
-     <!-- <i n="171">findingAids/howard/Coll._209-eadxml</i> -->
 
      <!-- 5 digit dates -->
      <!-- <i n="169">findingAids/oac/clloy/freeman.xml</i> -->
@@ -103,8 +247,6 @@
 
      <!-- <i n="153">findingAids/ahub/imperial/0013_2002.xml</i> -->
 
-     <!-- multi persname in origination, breaks code that expects only a single persname -->
-     <!-- <i n="158">findingAids/aao/asu_az_state_university/bernasconi.xml</i> -->
 
 
 
@@ -186,6 +328,7 @@
      <!-- multi unittitle effects text in relationEntry and citation -->
      <!-- <i n="55">findingAids/umi/clementsmss/ottfam_final.xml</i> -->
 
+
      <!-- has xm-replace_text processing instruction in bioghist -->
      <!-- <i n="54">findingAids/rmoa/wyu-ah11726.xml</i> -->
 
@@ -209,6 +352,8 @@
      <!--
          A small number of collections are spread across two or more repositories. Keep both repositories when
          constructing the citation.
+         
+         Two repositories caused problems with new repository code.
      -->
      <!-- <i n="39">findingAids/duke/classic-EADs/ncmutual.xml</i> -->
      <!-- <i n="40">findingAids/ahub/strathclydeuni/948_2002.xml</i> -->
@@ -232,7 +377,29 @@
      <!-- had an infinite loop -->
      <!-- <i n="6">findingAids/ahub/aaschool/gb-1968-aa.xml</i> -->
 
-     <!-- <i n="3">findingAids/ohlink/OhCiUAR0188.xml</i> -->
+     <!-- exciting variations in <repository> -->
+
+     <!-- 
+          Mixed text node plus <corpname> messes up simply serialization.
+
+          <repository label="Repository">The <corpname source="lcnaf">Bancroft Library</corpname>
+          <address><addressline>University of California, Berkeley</addressline><addressline>Berkeley, California, 94720-6000</addressline><addressline>Phone: (510) 642-6481</addressline><addressline>Fax: (510) 642-7589</addressline><addressline>Email: bancref@library.berkeley.edu</addressline><addressline>URL: http://bancroft.berkeley.edu/</addressline></address>
+          </repository>
+     -->
+     <!-- <i n="3">findingAids/oac/berkeley/bancroft/m88_206_cubanc.xml</i> -->
+
+     <!--
+         various jing errors, mostly (all?) in biogHist
+         
+         If corpname and text, then ignore the text, otherwise we get bad comma space formatting.
+         
+         <repository label="Repository"><corpname>Claremont Colleges. Library. </corpname> Special Collections, Honnold/Mudd
+         Library. <address><addressline>Claremont, CA 91711</addressline></address>
+         </repository>
+     -->
+     <!-- <i n="14">findingAids/oac/cuc/mud/h1950.1.ead.xml</i> -->
+
+
      <!--
          jing validation on span, item
      -->

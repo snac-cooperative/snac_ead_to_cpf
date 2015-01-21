@@ -83,6 +83,12 @@
         For rewview data, with original EAD included:
         
         ./extract_all.pl review=1 inc_orig=1 > rev.log 2>&1 &
+        
+        The review feature works on separate data, and creates separate output, both to support fully
+        functional review data. (The review probably has URLs completed, which is an issue with the normal QA
+        which cannot complete URLs.) Review reads file lists from ./review_file_lists/ instead of
+        ./createFielLists/. It logs to ./rlogs/ instead of ./logs/. And it writes results to ./cpf_review/
+        instead of ./cpf_extract/. See extract_all.pl. 
 
         Validate with jing. The old way with find -exec works well enough. stdout and stderr can both go to
         the same file, so we only need one log file.
@@ -94,6 +100,8 @@
         Use two log files and the eta param, \-\-eta, that is dash dash eta
         
         find cpf_extract/ -type f | parallel \-\-eta -X java -jar /usr/share/jing/bin/jing.jar /projects/socialarchive/published/shared/cpf.rng {} ::: > jing.log 2> jing_error.log &
+        
+        For debugging, see variable processingType. A differnt command line is necessary.
 
     -->
 
@@ -119,9 +127,25 @@
     <xsl:variable name="depth_path">
         <xsl:text>findingAids</xsl:text>
     </xsl:variable>
+    
+    <xsl:variable name="this_year" select="year-from-date(current-date())"/>
 
     <xsl:variable name="processingType">
+        <!-- 
+             Only CPFOut will produce CPF output. All the others are for debugging, and write XML to stdout,
+             creating no files.
+             
+             When using one of the debug processing types, separate stdout and stderr to separate log files.
+
+             snac_transform.sh qa2.xml eadToCpf.xsl cpfOutLocation="cpf_qa" inc_orig=0 > qa.log 2> qa_err.log &
+        -->
+        
         <xsl:text>CPFOut</xsl:text>
+
+        <!-- <xsl:text>rawExtract</xsl:text> -->
+        <!-- <xsl:text>stepOne</xsl:text> -->
+        <!-- <xsl:text>stepTwo</xsl:text> -->
+        <!-- <xsl:text>stepFive</xsl:text> -->
         <!-- rawExtract stepOne stepTwo stepThree stepFour stepFive testCPFOut CPFOut-->
     </xsl:variable>
 
@@ -129,7 +153,16 @@
         The expected, normal xml input file is something like: createFileLists/nmaia_list.xml which to base-uri() is:
         file:/lv1/home/twl8n/ead2cpf_pack/createFileLists/nmaia_list.xml
     -->
-    <xsl:variable name="file2url" select="document(concat('url_xml/', replace(base-uri(), '.*/(.*?)_.*', '$1'), '_url.xml'))"/>
+    <xsl:variable name="file2url">
+        <xsl:choose>
+            <xsl:when test="matches(base-uri(), '_missing')">
+                <xsl:copy-of select="document(concat('url_xml/', replace(base-uri(), '.*/(.*?_missing).*', '$1'), '_url.xml'))"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy-of select="document(concat('url_xml/', replace(base-uri(), '.*/(.*?)_.*', '$1'), '_url.xml'))"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:variable>
 
     <!--
         Do not include original data unless specifically asked to.
@@ -158,7 +191,7 @@
         </xsl:message>
 
         <xsl:for-each select="document($fn)">
-            <xsl:variable name="original_ead" select="."/>
+            <!-- <xsl:variable name="original_ead" select="."/> -->
             <!--
                 Raw extraction extracts all tagged names and origination, tagged or not. For the
                 latter it attemts to determine type, and if unable to do so, defaults to persname. It
@@ -169,7 +202,15 @@
                 <!--
                     Extraction origination which is creator of the collection, or author of the materials in
                     the collection.
+                    
+                    Nov 11 2014 Add logging for multiple names in origination. Some finding aids may what we
+                    consider .r names in origination instead of controlaccess.
                 -->
+                <xsl:if test="count(ead/archdesc/did/origination) > 1">
+                    <xsl:message>
+                        <xsl:value-of select="concat('Multi-orig: ', count(ead/archdesc/did/origination), $cr)"/>
+                    </xsl:message>
+                </xsl:if>
                 <xsl:for-each select="ead/archdesc/did/origination">
                     <!-- <xsl:message> -->
                     <!--     <xsl:text>orig: </xsl:text> -->
@@ -215,8 +256,12 @@
                                                 </xsl:element>
                                             </rawExtract>
                                             <xsl:variable name="an">
-                                                <!-- see "note 1" elsewhere in this file -->
-                                                <xsl:call-template name="attributeNormal"/>
+                                                <!--
+                                                    See "note 1" elsewhere in this file. This adds a new
+                                                    <normal> with a copy of the name from rawExtract. This has
+                                                    led to several bugs and some confusion.
+                                                -->
+                                                <xsl:call-template name="tpt_attributeNormal"/>
                                             </xsl:variable>
                                             <xsl:copy-of select="$an"/>
                                         </xsl:otherwise>
@@ -284,7 +329,18 @@
                     Due to processing the data before building the <entity> element, the data is in
                     $temp_entity_controlaccess, and the <entity> element is below.
                 -->
+                <!-- <xsl:for-each select="ead/archdesc//controlaccess/(persname | corpname | famname)"> -->
+                <!--     <xsl:message> -->
+                <!--         <xsl:text>ca-no: </xsl:text> -->
+                <!--         <xsl:copy-of select="."/> -->
+                <!--     </xsl:message> -->
+                <!-- </xsl:for-each> -->
+
                 <xsl:for-each select="ead/archdesc//controlaccess/(persname | corpname | famname)[matches(.,'[\p{L}]')]">
+                    <!-- <xsl:message> -->
+                    <!--     <xsl:text>ca-match: </xsl:text> -->
+                    <!--     <xsl:copy-of select="."/> -->
+                    <!-- </xsl:message> -->
                     <xsl:variable name="temp_entity_controlaccess">
                         <container>
                             <xsl:if
@@ -298,6 +354,8 @@
                             </xsl:if>
                             <xsl:choose>
                                 <xsl:when test="snac:containsFamily(.)">
+                                    <xsl:message>
+                                    </xsl:message>
                                     <rawExtract>
                                         <xsl:element name="{name()}">
                                             <xsl:copy-of select="@*"/>
@@ -330,11 +388,13 @@
                                          so it won't be perfect. The @firstname is only the first "word" of the
                                          forename.
                                     -->
-                                    <rawExtract>
+                                    <xsl:variable name="special_controlaccess_normal">
                                         <xsl:element name="{name()}">
                                             <xsl:copy-of select="@*"/>
                                             <!--
-                                                If you change this you probably also need to change line 1314.
+                                                If you change this you probably also need to change variable nice_name below.
+                                                (What is supposed to be at line 1314? Nothing interesting
+                                                there now.)
                                                 
                                                 Build the name that we want. We will have to clean up extraneous dots (periods) and parenthesis.
                                                 
@@ -343,12 +403,47 @@
                                                 
                                                 Has both 'dates' and 'y' (other records have a date in 'y')
                                                 /data/source/findingAids/ahub/gulsc/1071_2002.xml
+                                                
+                                                <persname source="gb-0247" normal="marr, james, c1877-c1955"
+                                                encodinganalog="jisc-hub40" authfilenumber="p0419"> <emph
+                                                altrender="surname">Marr</emph> <emph
+                                                altrender="forename">James</emph> <emph altrender="dates">fl
+                                                1895</emph> <emph altrender="y">minister</emph> </persname>
+                                                
+                                                However, BNF gives us simple persname values:
+                                                
+                                                <persname>Kossyguine, Alexis (1904 - 1980)</persname>
                                             -->
                                             <xsl:variable name="nice_name">
+                                                <xsl:for-each select="*|node()">
+                                                    <!--
+                                                        New: Sep 21 2014, stop removing <emph> until we find the case(s) where it was a problem. 
+                                                        
+                                                        <controlaccess id="a12">
+                                                        <persname rules="ncarules">
+                                                        <emph altrender="surname">Mackay</emph>
+                                                        <emph altrender="forename">Alexander Murdoch</emph>
+                                                        <emph altrender="dates">1849-1890</emph>
+                                                        <emph altrender="epithet">Mechanical engineer, missionary</emph>
+                                                        </persname>
+                                                        
+                                                        xlf /data/source/findingAids/ahub/birminghamspcoll/900_2002.xml
+                                                        less cpf_qa/ahub/birminghamspcoll/900_2002.c01.xml
+                                                        
+                                                        old: I couldn't figure out an xpath that didn't include
+                                                        <emph> (perhaps because it it matching node()) so just
+                                                        use an xsl:if to weed out the <emph> elements.
+                                                    -->
+                                                    <!-- <xsl:if test="name() != 'emph'"> -->
+                                                        <xsl:value-of select="."/>
+                                                        <xsl:value-of select="' '"/>
+                                                    <!-- </xsl:if> -->
+                                                </xsl:for-each>
+
                                                 <!-- there are cases of multiple surname values "Lloyd" and "George", separate with a space -->
                                                 <xsl:value-of select="emph[@altrender='surname' or @altrender='a' ]" separator=" "/>
 
-                                                <!-- comma after surname(s) -->
+                                                <!-- Comma after surname(s). Extra comma removed by a later cleaning step. -->
                                                 <xsl:value-of select="', '"/>
 
                                                 <!-- there are cases of multiple forenames, so separate with space -->
@@ -367,6 +462,9 @@
                                                 </xsl:for-each>
                                             </xsl:variable>
                                             
+                                            <!--
+                                                "improved" in the sense that $nice_name is just cleaned up.
+                                            -->
                                             <xsl:variable name="improved_name">
                                                 <xsl:value-of select="snac:removeLeadingComma(
                                                                       snac:removeFinalComma(
@@ -379,12 +477,36 @@
                                             <!--     <xsl:text>pri: </xsl:text> -->
                                             <!--     <xsl:value-of select="normalize-space($improved_name)"/> -->
                                             <!--     <xsl:value-of select="$cr"/> -->
+                                            <!--     <xsl:text>context: </xsl:text> -->
                                             <!--     <xsl:copy-of select="."/> -->
+                                            <!--     <xsl:value-of select="$cr"/> -->
+                                            <!--     <xsl:text>nice_name: (nice, not improved) </xsl:text> -->
+                                            <!--     <xsl:copy-of select="snac:fixDates($nice_name)"/> -->
                                             <!--     <xsl:value-of select="$cr"/> -->
                                             <!-- </xsl:message> -->
                                         </xsl:element>
+                                    </xsl:variable> <!-- special_controlaccess_normal -->
+                                    <rawExtract>
+                                        <xsl:element name="{name()}">
+                                            <xsl:copy-of select="@*"/>
+                                            <xsl:value-of select="normalize-space(.)"/>
+                                        </xsl:element>
+
+                                        <!-- Stop using $special_controlaccess_normal, and go back the the original code. -->
+                                        <!-- <xsl:copy-of select="$special_controlaccess_normal"/> -->
                                     </rawExtract>
+
+                                    <!-- Go back to calling tpt_attributeNormal -->
+                                    <!-- <normal type="attributeNormal"> -->
+                                    <!--     <xsl:copy-of select="$special_controlaccess_normal"/> -->
+                                    <!-- </normal> -->
                                     <!--
+                                        In the old days we called tpt_attributNormal here, but that created
+                                        issues. (What issues?) The $special_controlaccess_normal is exactly
+                                        the same code as tpt_attributNormal runs for non-@normal names.  We
+                                        want $special_controlaccess_normal , and it is wrong to run anything
+                                        else here.
+
                                         Note 1.
                                         Calling attributeNormal creates a second <persname> or whatever outside
                                         <rawExtract> but using a separate code, with the undesireable effect that
@@ -392,11 +514,17 @@
                                         anthing you fix/do with names above probably also has to be fixed in
                                         attributeNormal.
                                     -->
-                                    <xsl:call-template name="attributeNormal"/>
+                                    <xsl:call-template name="tpt_attributeNormal"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </container>
-                    </xsl:variable>
+                    </xsl:variable> <!-- temp_entity_controlaccess -->
+
+                    <!-- <xsl:message> -->
+                    <!--     <xsl:text>tec: </xsl:text> -->
+                    <!--     <xsl:copy-of select="$temp_entity_controlaccess"/> -->
+                    <!--     <xsl:value-of select="$cr"/> -->
+                    <!-- </xsl:message> -->
 
                     <!--
                         Test to make sure we have at least one persname|famname|corpname that isn't empty. Then at the bottom
@@ -412,8 +540,14 @@
                     <xsl:variable name="pn_value">
                         <xsl:value-of select="$temp_entity_controlaccess/container/rawExtract/(persname|famname|corpname)"/>
                     </xsl:variable>
+                    <!-- <xsl:message> -->
+                    <!--     <xsl:text>pnv: </xsl:text> -->
+                    <!--     <xsl:copy-of select="$temp_entity_controlaccess"/> -->
+                    <!-- </xsl:message> -->
+
                     <xsl:if test="string-length($pn_value)">
-                        <entity source="controlaccess" encodinganalog="{$temp_entity_controlaccess/container/rawExtract/(persname|famname|corpname)/@encodinganalog}">
+                        <entity source="controlaccess"
+                                encodinganalog="{$temp_entity_controlaccess/container/rawExtract/(persname|famname|corpname)/@encodinganalog}">
                             <!-- 
                                  New: all names get ftwo down in variable name rawExtract_b so we don't need
                                  to create a normal-for-match name here.
@@ -475,7 +609,7 @@
                                     </xsl:element>
                                 </rawExtract>
                                 <!-- see "note 1" elsewhere in this file -->
-                                <xsl:call-template name="attributeNormal"/>
+                                <xsl:call-template name="tpt_attributeNormal"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </entity>
@@ -544,7 +678,7 @@
                                     </xsl:element>
                                 </rawExtract>
                                 <!-- see "note 1" elsewhere in this file -->
-                                <xsl:call-template name="attributeNormal"/>
+                                <xsl:call-template name="tpt_attributeNormal"/>
                             </xsl:otherwise>
                         </xsl:choose>
 
@@ -633,7 +767,9 @@
             </xsl:variable> <!-- rawExtract_b -->
             
             <!--
-                Another intermediate step that tries to match origination and controlaccess names.
+                Another intermediate step that tries to match origination and controlaccess names. And I think
+                it decides which name to use, and might use controlaccess rather than origination (if the
+                names match, and based on some other criteria).
             -->
             <xsl:variable name="rawExtract">
                 <xsl:for-each select="$rawExtract_b/entity">
@@ -667,7 +803,7 @@
 
                     <xsl:choose>
                         <xsl:when test="./@source = 'origination' and string-length($matches_ca) > 0">
-                            <entity source="origination" ftwo="{@ftwo}">
+                            <entity source="origination" ftwo="{@ftwo}" true_source="controlaccess">
                                 <xsl:copy-of select="$matches_ca/entity/*"/>
                             </entity>
                             <!-- <xsl:message> -->
@@ -700,11 +836,9 @@
             <!--     <xsl:text>rexa: </xsl:text> -->
             <!--     <xsl:copy-of select="$rawExtract_a"/> -->
             <!--     <xsl:value-of select="$cr"/> -->
-
             <!--     <xsl:text>rexb: </xsl:text> -->
             <!--     <xsl:copy-of select="$rawExtract_b"/> -->
             <!--     <xsl:value-of select="$cr"/> -->
-
             <!--     <xsl:text>new rex: </xsl:text> -->
             <!--     <xsl:copy-of select="$rawExtract"/> -->
             <!--     <xsl:value-of select="$cr"/> -->
@@ -767,32 +901,51 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
-
                                 <xsl:when test="normal/persname">
                                     <entity>
                                         <xsl:copy-of select="* | @*"/>
                                         <xsl:if test="normal[not(@type='attributeNormal')]/persname">
-                                            <!-- This on normalizes those that do not have a @normal in rawExtract -->
+                                            <!--
+                                                If we have a normal that is not an attributeNormal, then do
+                                                additional normalization, and make the type regExed. Var
+                                                pers_normal is Daniel's original normalization. 
+                                                
+                                                Added normalize-space() to start things off because we
+                                                previously weren't dealing well with embedded newlines.
+                                                
+                                                oct 27 2014 remove snac:removeApostropheLowercaseSSpace()
+                                                which we decided does more harm than good.
+                                                
+                                                Note: this piece of code is only for person! (not
+                                                corporateBody or family).
+                                                
+                                                Nov 11 2014 Add snac:removeColon() here and to normal/corpname below.
+                                            -->
+                                            <xsl:variable name="pers_normal">
+                                                <xsl:value-of
+                                                    select="
+                                                            snac:removeColon(
+                                                            snac:stripStringAfterDateInPersname(
+                                                            snac:removeBeforeHyphen2(
+                                                            snac:fixSpacing(
+                                                            snac:fixDatesReplaceActiveWithFl(
+                                                            snac:fixDatesRemoveParens(
+                                                            snac:fixCommaHyphen2(
+                                                            snac:cleanCommaHyphenEarly(
+                                                            snac:fixHypen2Paren(
+                                                            snac:removeTrailingInappropriatePunctuation(
+                                                            snac:removeInitialNonWord(
+                                                            snac:removeInitialTrailingParen(
+                                                            snac:removeBrackets(                            
+                                                            snac:removeInitialHypen(
+                                                            snac:removeQuotes(
+                                                            snac:fixSpaceComma(
+                                                            normalize-space(normal/persname)))))))))))))))))"
+                                                        />
+                                            </xsl:variable>
                                             <normal type="regExed">
                                                 <persname>
-                                                    <xsl:value-of
-                                                        select="
-                                                                snac:stripStringAfterDateInPersname(
-                                                                snac:removeApostropheLowercaseSSpace(
-                                                                snac:removeBeforeHyphen2(
-                                                                snac:fixSpacing(
-                                                                snac:fixDatesReplaceActiveWithFl(
-                                                                snac:fixDatesRemoveParens(
-                                                                snac:fixCommaHyphen2(
-                                                                snac:fixHypen2Paren(
-                                                                snac:removeTrailingInappropriatePunctuation(
-                                                                snac:removeInitialNonWord(
-                                                                snac:removeInitialTrailingParen(
-                                                                snac:removeBrackets(                            
-                                                                snac:removeInitialHypen(
-                                                                snac:removeQuotes(
-                                                                snac:fixSpaceComma(normal/persname)))))))))))))))"
-                                                        />
+                                                    <xsl:value-of select="snac:normalize_extra($pers_normal)"/>
                                                 </persname>
                                             </normal>
                                         </xsl:if>
@@ -830,6 +983,9 @@
                                     </entity>
                                 </xsl:when>
 
+                                <!--
+                                    Nov 11 2014 Add snac:removeColon() here and to normal/persname above.
+                                -->
                                 <xsl:when test="normal/corpname">
                                     <entity>
                                         <xsl:copy-of select="* | @*"/>
@@ -838,15 +994,17 @@
                                                 <corpname>
                                                     <xsl:value-of
                                                         select="normalize-space(
-                                                                snac:removeBeforeHyphen2(               
+                                                                snac:removeColon(
+                                                                snac:removeBeforeHyphen2(
                                                                 snac:fixDatesRemoveParens(
                                                                 snac:fixCommaHyphen2(
+                                                                snac:cleanCommaHyphenEarly(
                                                                 snac:fixHypen2Paren(
                                                                 snac:removeTrailingInappropriatePunctuation(
                                                                 snac:removeInitialTrailingParen(
-                                                                snac:removeBrackets(                                            
+                                                                snac:removeBrackets(
                                                                 snac:removeInitialHypen(
-                                                                snac:removeQuotes(normal/corpname))))))))))"
+                                                                snac:removeQuotes(normal/corpname))))))))))))"
                                                         />
                                                 </corpname>
                                             </normal>
@@ -858,7 +1016,11 @@
                                         </xsl:call-template>
                                     </entity>
                                 </xsl:when>
-
+                                <xsl:otherwise>
+                                    <error>
+                                        <xsl:text>normalizeStepOne fails</xsl:text>
+                                    </error>
+                                </xsl:otherwise>
                             </xsl:choose>
                         </xsl:otherwise>
                     </xsl:choose>
@@ -873,6 +1035,18 @@
                         <xsl:copy-of select="@* | *"/>
                         <normalForMatch>
                             <xsl:choose>
+                                <!-- 
+                                     Newer: Note: the value of @normal is used for family, but not for
+                                     persname or corporateBody. At least in NWDA some @normal values don't
+                                     contain a normalized name, but instead have a curious date. It seems to
+                                     be true that @normal is often normalized for matching, but we are
+                                     probably better off doing our own normalization, especially for match.
+                                     
+                                     Old: This (referrring to the code below?) is strange because any element
+                                     <normal> with @type attributeNormal will have an @normal already. In
+                                     fact, I'm fairly sure that all <normal> elements have an @normal which
+                                     already is normalized for matching.
+                                -->
                                 <xsl:when test="normal[@type='attributeNormal']">
                                     <xsl:value-of select="snac:normalizeString(normal[@type='attributeNormal'])"/>
                                 </xsl:when>
@@ -1179,9 +1353,14 @@
                 NORMALIZE STEP FIVE: Adds the identifier component for each entity, c or r, and number.
                 
                 Is this the final step?
+                
+                Put the ead source here so we don't create another var and run out of memory/string exception.
             -->
 
             <xsl:variable name="normalizeStepFive">
+                <ead_source>
+                    <xsl:copy-of select="."/>
+                </ead_source>
                 <xsl:variable name="selectBioghist">
                     <!--
                         tpt_selectBioghist is in namespace eac, for some good reason (like not wanting to put
@@ -1231,17 +1410,17 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:attribute>
-                            <normalFinal>
+                            <normalFinal step="five">
                                 <!--
                                     attributeNormal was lacking the /* which caused an empty entityType. Fixed
                                     and and nothing else seemed to break. jan 31 2013
                                 -->
                                 <xsl:choose>
                                     <xsl:when test="normal[@type='attributeNormal']">
-                                        <xsl:copy-of select="normal[@type='attributeNormal']/*"/>
+                                        <xsl:copy-of select="normal[@type='attributeNormal']/(*|@*)"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:copy-of select="normal[@type='regExed']/*"/>
+                                        <xsl:copy-of select="normal[@type='regExed']/(*|@*)"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </normalFinal>                                      
@@ -1255,13 +1434,38 @@
                 </xsl:call-template>
             </xsl:variable> <!-- normalizeStepFive end -->
 
+            <xsl:message>
+                <xsl:for-each select="$normalizeStepFive/entity/normalFinal">
+                    <xsl:text>normalFinal: </xsl:text>
+                    <xsl:value-of select="."/>
+                    <xsl:text>   type: </xsl:text>
+                    <xsl:value-of select="@type"/>
+                    <xsl:text> cpf: </xsl:text>
+                    <xsl:value-of select="name((persname|corpname|famname))"/>
+                    <xsl:value-of select="$cr"/>
+                </xsl:for-each>
+            </xsl:message>
+
             <!-- ****************************************************************** -->
             <!-- ****************************************************************** -->
             <!-- ****************************************************************** -->
             
             <!-- 
-                 oneFindingAid appears never to be used. What was it supposed to do?
+                 Debug output. When $processingType is set to anything except CPFOutput, then the only output is a <report> element, sent to stdout.
             -->
+
+            <!-- temporarily, dump rawExtract -->
+
+            <!-- <xsl:if test="not($processingType='CPFOut')"> -->
+            <!--     <rawExtract_debug source="{$eadPath}"> -->
+            <!--         <xsl:for-each select="$rawExtract"> -->
+            <!--             <xsl:for-each select="*"> -->
+            <!--                 <xsl:copy-of select="."/> -->
+            <!--             </xsl:for-each> -->
+            <!--         </xsl:for-each> -->
+            <!--     </rawExtract_debug> -->
+            <!-- </xsl:if> -->
+
             <xsl:choose>
                 <xsl:when test="$processingType='rawExtract'">
                     <oneFindingAid source="{$eadPath}">
@@ -1351,11 +1555,12 @@
                                     </xsl:for-each>
                                 </xsl:variable>
                                 <xsl:for-each select="entity">
+                                    <!-- $processingType='testCPFOut' -->
                                     <xsl:call-template name="CpfRoot">
                                         <xsl:with-param name="counts" tunnel="yes" select="$counts"/>
                                         <xsl:with-param name="otherData" tunnel="yes" select="$otherData"/>
                                         <xsl:with-param name="entitiesForCPFRelations" tunnel="yes" select="$entitiesForCPFRelations"/>
-                                        <xsl:with-param name="debug" select="$normalizeStepFive"/>
+                                        <xsl:with-param name="debug" select="$normalizeStepFive" tunnel="yes"/>
                                     </xsl:call-template>
                                 </xsl:for-each>
                                 <!-- use to test added bio and subject data [not(self::entity)] -->
@@ -1385,6 +1590,13 @@
                                 <xsl:copy-of select="."/>
                             </xsl:for-each>
                             <xsl:if test="count(otherData/did/unittitle) > 1">
+                                <!-- 
+                                     This logging message is here because the unittitle has been a on-going
+                                     problem. The many permutations have created at least half a dozen types
+                                     of failures, most of which lose some of the title text. Dates and other
+                                     markup may occur anywhere in the title, along with plain text and xpath
+                                     can't cope with that. See templates.xsl template parse_unittitle.
+                                -->
                                 <xsl:message>
                                     <xsl:text>multi unittitle </xsl:text>
                                     <xsl:value-of select="concat('count: ', count(otherData/did/unittitle))"/>
@@ -1418,19 +1630,18 @@
                                 Template CpfRoot calls all the parts of the CPF place holder XML code that
                                 finally makes the output CPF XML. See templates.xsl.
                             -->
+                            <!-- $processingType='CPFOut' -->
                             <xsl:call-template name="CpfRoot">
                                 <xsl:with-param name="counts" tunnel="yes" select="$counts"/>
                                 <xsl:with-param name="otherData" tunnel="yes" select="$otherData"/>
                                 <xsl:with-param name="entitiesForCPFRelations" tunnel="yes" select="$entitiesForCPFRelations"/>
-                                <xsl:with-param name="debug" select="$normalizeStepFive"/>
-                                <xsl:with-param name="original_ead" select="$original_ead" tunnel="yes"/>
+                                <xsl:with-param name="debug" select="$normalizeStepFive" tunnel="yes"/>
                             </xsl:call-template>
                         </xsl:for-each>
                     </xsl:if>
                 </xsl:for-each>
             </xsl:if> <!-- $processingType='CPFOut' -->
-            <!-- end of for each document(.) -->
-        </xsl:for-each>
+        </xsl:for-each> <!-- end of for each document(.) -->
     </xsl:template> <!-- tpt_process -->
 
     <xsl:template name="tpt_main" match="/">
@@ -1440,13 +1651,28 @@
             <!-- trick XSLT into evaluating $file2url now, so we get any potential warning at the beginning -->
             <xsl:value-of select="concat('      file2url: ', string-length($file2url), $cr)"/>
             <xsl:value-of select="concat('      inc_orig: ', $inc_orig, $cr)"/>
+            <xsl:value-of select="$cr"/>
+            <xsl:value-of select="concat(' log file notes ', $cr)"/>
+            <xsl:text>   unfixed date: shows dates not handled by snac:fixDates, logged in case we want to add some future parsing</xsl:text>
+            <xsl:value-of select="$cr"/>
+            <xsl:text>    normalFinal: shows the fixed/cleaned/normal version of names as a sanity check</xsl:text>
+            <xsl:value-of select="$cr"/>
+            <xsl:text>   geog1: geogx: are here as a necessary part of the geonames parsing. See readme.md</xsl:text>
+            <xsl:value-of select="$cr"/>
         </xsl:message>
 
-        <xsl:if test="matches(base-uri(), 'ahub_list.xml')">
-            <xsl:message terminate="yes">
-                <xsl:value-of select="'Skipping this file. See eadToCpf.xsl, line 1414'"/>
-            </xsl:message>
-        </xsl:if>
+        <!--
+            dec 8 2014 we have new ahub data, so we are processing their EAD. Perhaps other collections should
+            not be processed? 
+            
+            If uncommented, this needs a clearer message.
+        -->
+
+        <!-- <xsl:if test="matches(base-uri(), 'ahub_list.xml')"> -->
+        <!--     <xsl:message terminate="yes"> -->
+        <!--         <xsl:value-of select="'Skipping this file. See eadToCpf.xsl, line 1414'"/> -->
+        <!--     </xsl:message> -->
+        <!-- </xsl:if> -->
 
         <xsl:for-each select="snac:list/snac:group">
             <!--
@@ -1467,16 +1693,10 @@
                         <xsl:with-param name="icount" select="@n"/>
                     </xsl:call-template>
                 </xsl:variable>
-                <!-- <xsl:message> -->
-                <!--     <xsl:value-of select="concat('snac:i: ', ., ' n: ', @n, ' slp: ', string-length($process), ' nprocs: ' , count($process/*))"/> -->
-                <!-- </xsl:message> -->
                 <xsl:choose>
                     <xsl:when test="$processingType='CPFOut'">
                         <xsl:for-each select="$process/*">
                             <xsl:variable name="recordId" select="./control/recordId" xpath-default-namespace="urn:isbn:1-931666-33-4"/>
-                            <!-- <xsl:message> -->
-                            <!--     <xsl:value-of select="concat('col: ', $cpfOutLocation, ' si: ', $sourceID,'/', ' rid: ', $recordId, '.xml')"/> -->
-                            <!-- </xsl:message> -->
                             <xsl:result-document href="{$cpfOutLocation}/{$recordId}.xml" indent="yes">
                                 <xsl:processing-instruction name="oxygen">
                                     <xsl:text>RNGSchema="http://socialarchive.iath.virginia.edu/shared/cpf.rng" type="xml"</xsl:text>
@@ -1498,15 +1718,44 @@
             </xsl:for-each>
             <!-- end of each fileList batch -->
         </xsl:for-each>
+        <!--
+            Putting this message at the end of tpt_process was not right. Ditto above with
+            result-document(). In both cases we get lots of messages, not one single message at the end.
+            
+            This doesn't guarantee that things worked, just that we got here without a fatal XSLT error or
+            Java exception.
+        -->
+        <xsl:if test="$processingType='CPFOut'">
+            <xsl:message>
+                <xsl:text>Script completes CPF output ok.</xsl:text>
+            </xsl:message>
+        </xsl:if>
     </xsl:template> <!-- tpt_main match="/" -->
 
-    <xsl:template name="attributeNormal">
+    <xsl:template name="tpt_attributeNormal">
         <xsl:choose>
+            <!--
+                jul 21 2014 changed value to normalize-space of context. Was @normal, but that created
+                problems, and wasn't entirely sensible. @normal is (supposedly) a version of the name normalized for
+                matching or other purposes, not for display. The value below *will* be in output.
+
+                This does not work for all names, or not the way we expect. @normal often contains a lowercase
+                version of the name. The value of <normal> ends up being the of nameEntry/part, which is very
+                wrong when both <origination> and <controlaccess> have better values.
+                
+                See /data/source/findingAids/ahub/gulsc/1080_2002.xml
+                
+                <persname source="gb-0247" authfilenumber="p0430" normal="ogilvie, james dean, c1867-1949">Ogilvie, James Dean (c1867-1949: merchant, book collector and bibliographer)</persname>
+            -->
             <xsl:when test="@normal">
                 <normal type="attributeNormal">
                     <xsl:element name="{name()}">
                         <xsl:copy-of select="@*"/>
-                        <xsl:value-of select="normalize-space(@normal)"/>
+                        <xsl:value-of select="normalize-space(.)"/>
+                        <!-- <xsl:message> -->
+                        <!--     <xsl:text>context norm attr: </xsl:text> -->
+                        <!--     <xsl:copy-of select="."/> -->
+                        <!-- </xsl:message> -->
                     </xsl:element>
                 </normal>
             </xsl:when>
@@ -1515,7 +1764,7 @@
                     <xsl:element name="{name()}">
                         <xsl:copy-of select="@*"/>
                         <!--
-                            If you change this you probably also need to change line 309.
+                            If you change this you probably also need to change variable nice_name above.
                             
                             Build the name that we want. We will have to clean up extraneous dots (periods) and parenthesis.
                             
@@ -1523,27 +1772,47 @@
                             Stokes,  Leonard Aloysius Scott . ( 1858-1925 )  architect
                         -->
                         <xsl:variable name="nice_name">
-                            <xsl:choose>
-                                <xsl:when test="emph">
-                                    <!-- there are cases of multiple surname values "Lloyd" and "George", separate with a space -->
-                                    <xsl:value-of select="emph[@altrender='surname' or @altrender='a' ]" separator=" "/>
-                                    
-                                    <!-- comma after surname(s) -->
-                                    <xsl:value-of select="', '"/>
-                                    
-                                    <!-- there are cases of multiple forenames, so separate with space -->
-                                    <xsl:value-of select="emph[@altrender='forename']" separator=" "/>
-                                    <xsl:for-each select="emph[@altrender='dates' or 
-                                                          @altrender='y' or
-                                                          @altrender='epithet']">
-                                        <xsl:value-of select="concat(', ', .)"/>
-                                    </xsl:for-each>
-                                </xsl:when>
-                                <xsl:otherwise>
+                            <xsl:for-each select="*|node()">
+                                
+                                <!-- <xsl:message> -->
+                                <!--     <xsl:text>context nn: </xsl:text> -->
+                                <!--     <xsl:value-of select="concat(name(), ' ', ., $cr)"/> -->
+                                <!-- </xsl:message> -->
+
+                                <!--
+                                    new: sep 18 2014 Why weed anything out? We want the full text of names,
+                                    even stuff in <emph> or any other element that people may have put into
+                                    the name field.
+
+                                    old: I couldn't figure out an xpath that didn't include
+                                    <emph> (perhaps because it is matching node()) so just
+                                    use an xsl:if to weed out the <emph> elements.
+                                -->
+                                <!-- <xsl:if test="name() != 'emph'"> -->
                                     <xsl:value-of select="."/>
-                                </xsl:otherwise>
-                            </xsl:choose>
+                                    <xsl:value-of select="' '"/>
+                                <!-- </xsl:if> -->
+                            </xsl:for-each>
+
+                            <!-- there are cases of multiple surname values "Lloyd" and "George", separated with a space -->
+
+                            <xsl:value-of select="emph[@altrender='surname' or @altrender='a' ]" separator=" "/>
+                            
+                            <!-- comma after surname(s) -->
+                            <xsl:value-of select="', '"/>
+                            
+                            <!-- there are cases of multiple forenames, so separate with space -->
+                            <xsl:value-of select="emph[@altrender='forename']" separator=" "/>
+                            <xsl:for-each select="emph[@altrender='dates' or 
+                                                  @altrender='y' or
+                                                  @altrender='epithet']">
+                                <xsl:value-of select="concat(', ', .)"/>
+                            </xsl:for-each>
                         </xsl:variable>
+                        <!-- <xsl:message> -->
+                        <!--     <xsl:text>attr nice_name: (nice, not improved) </xsl:text> -->
+                        <!--     <xsl:copy-of select="$nice_name"/> -->
+                        <!-- </xsl:message> -->
                         
                         <xsl:value-of select="snac:removeLeadingComma(
                                               snac:removeFinalComma(
@@ -1679,6 +1948,119 @@
             </languageOfDescription>
             <xsl:copy-of select="ead/eadheader/eadid"/>
             <xsl:copy-of select="ead/archdesc/did"/>
+            <!--
+                Sep 10 2014: <citation> and resourceRelation/relationEntry are both created from unittitle and
+                unitdate. If there is a repository, or something in $other_data/repo_info, <citation> will use
+                it. Keep this in mind when reading the comments below.
+
+                Save repository info. UNL records don't have ead/archdesc/did/repository,
+                so we must rely on unitid/@repositoryCode
+                
+                <unitid label="Collection Number:" encodinganalog="099" countrycode="us" repositorycode="NbU">RG 12-10-50</unitid> 
+                
+                Some other repository variations showing multiple <repository> elements, text elements mixed
+                with other elements, and an example with a <corpname> element.
+                
+                <repository label="Repository">David M. Rubenstein Rare Book &amp; Manuscript Library, Duke University</repository>
+                <repository label="Repository">University Archives, Records and History Center, North Carolina Central University</reposi
+                
+                <repository encodinganalog="852$a" label="Repository: ">
+                Special Collections Research Center, <lb/> Syracuse University Libraries <lb/>
+                <address>
+                <addressline>222 Waverly Avenue<lb/></addressline><addressline>Syracuse, NY 13244-2010<lb/></addressline>
+                <addressline><ptr href="http://scrc.syr.edu"/></addressline>
+                </address>
+                </repository>
+                
+                <repository label="Repository">
+                <corpname>California State Archives
+                </corpname>
+                <address>
+                <addressline>Sacramento, California</addressline>
+                </address>
+                </repository>
+
+                Save the whole <repository> in case something downstream needs it. Currently ignored. Put a
+                serialized version of the name as we want it to appear in the <citation> into <normal>.
+            -->
+            <xsl:choose>
+                <xsl:when test="ead/archdesc/did/repository">
+                    <repo_info>
+                        <xsl:copy-of select="ead/archdesc/did/repository/(*|node())"/>
+                        <normal>
+                            <xsl:variable name="pass1">
+                                <xsl:for-each select="ead/archdesc/did/repository">
+                                    <xsl:choose>
+                                        <xsl:when test="corpname|extref">
+                                            <xsl:for-each select="./text()|corpname|extref">
+                                                <xsl:if test="self::text()">
+                                                    <xsl:value-of select="concat(., ' ')"/>
+                                                </xsl:if>
+                                                <!-- text nodes won't go into the for-each below -->
+                                                <xsl:for-each select="*|node()">
+                                                    <xsl:value-of select="concat(.,' ')"/>
+                                                </xsl:for-each>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <xsl:when test="./text()">
+                                            <!--
+                                                Immediate child notes with text. We ignore non-text child elements.
+                                            -->
+                                            <xsl:for-each select="./text()|(./subarea/text())">
+                                                <xsl:value-of select="concat(., ' ')"/>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <xsl:when test="//text()">
+                                            <!--
+                                                As a last resort, text nodes anywhere, even inside child elements.
+                                            -->
+                                            <xsl:for-each select=".//text()">
+                                                <xsl:value-of select="concat(., ' ')"/>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    <xsl:if test="position() > 1">
+                                        <xsl:value-of select="', and '"/>
+                                    </xsl:if>
+                                </xsl:for-each>
+                            </xsl:variable>
+
+                            <xsl:variable name="pass2">
+                                <xsl:value-of select="normalize-space(
+                                                      replace(
+                                                      replace($pass1, ', and *$', ''), 
+                                                      ' ,', ','))"/>
+                            </xsl:variable>
+
+                            <!-- <xsl:message> -->
+                            <!--     <xsl:text>text: </xsl:text> -->
+                            <!--     <xsl:copy-of select="ead/archdesc/did/repository/text()"/> -->
+                            <!--     <xsl:value-of select="$cr"/> -->
+                            <!--     <xsl:text>found: </xsl:text> -->
+                            <!--     <xsl:value-of select="$pass2"/> -->
+                            <!--     <xsl:value-of select="$cr"/> -->
+                            <!-- </xsl:message> -->
+
+                            <xsl:value-of select="$pass2"/>
+
+                            <!-- <xsl:call-template name="tpt_repository"> -->
+                            <!--     <xsl:with-param name="repo" select="ead/archdesc/did/repository"/> -->
+                            <!-- </xsl:call-template> -->
+                        </normal>
+                    </repo_info>
+                </xsl:when>
+                <xsl:when test="ead/archdesc/did/unitid[@repositorycode = 'NbU']">
+                    <repo_info>
+                        <corpname>Archives &#38; Special Collections<lb/>University of Nebraska&#8212;Lincoln Libraries</corpname>
+                    </repo_info>
+                </xsl:when>
+                <xsl:otherwise>
+                    <repo_info missing="1">
+                    </repo_info>
+                </xsl:otherwise>
+            </xsl:choose>
 
             <!-- Either this is wrong, or the other call to selectBioghist is wrong.  template name="aboutOriginationEntity" -->
             <!-- Calling selectBioghist here causes the entire biogHist to duplicate in this entity record. -->
@@ -2042,6 +2424,19 @@
         <!-- <xsl:for-each select="$dateStringAnalyzeResultsOne"> -->
         <!-- </xsl:for-each> -->
 
+        <!--
+            There are several matches inline here. Rather than risk a typo in one of the cases, use a variable
+            for the match. This is actual date parsing. There is other non-parsing date cleaning in
+            functions.xsl.
+            
+            Circa is trick. Must have a c, 1 or zero a, 1 or zero \. (Note to self: quantifier ? is 1 or zero
+            by itself. Following a quantifier with ? signifies non-greedy, and in this latter case ? is a
+            modifier, not a quantifier.)
+        -->
+        
+        <xsl:variable name="florish_match" select="'fl\.?'"/>
+        <xsl:variable name="circa_match" select="'ca?\.?'"/>
+
         <xsl:variable name="dateStringAnalyzeResultsTwo">
             <xsl:choose>
                 <xsl:when test="$dateStringAnalyzeResultsOne/empty">
@@ -2051,13 +2446,21 @@
                     <xsl:for-each select="$dateStringAnalyzeResultsOne/fromString">
                         <fromDate>
                             <xsl:for-each select="tokenize(.,'\s')">
-                                <xsl:if test="matches(.,'fl\.?')">
+                                <!--
+                                    jan 2 2015 Deal with fl no dot
+                                -->
+                                <!-- <xsl:if test="matches(.,'fl\.?')"> -->
+                                <xsl:if test="matches(., $florish_match)">
                                     <active/>
                                 </xsl:if>
                                 <xsl:if test="matches(.,'active')">
                                     <active/>
                                 </xsl:if>
-                                <xsl:if test="matches(.,'ca\.?')">
+                                <!--
+                                    jan 2 2015 Deal with 'ca', 'c' with and without dots
+                                -->
+                                <!-- <xsl:if test="matches(.,'ca\.?')"> -->
+                                <xsl:if test="matches(., $circa_match)">
                                     <circa/>
                                 </xsl:if>
                                 <xsl:if test="matches(.,'[\d]{3,4}')">
@@ -2069,13 +2472,13 @@
                     <xsl:for-each select="$dateStringAnalyzeResultsOne/toString">
                         <toDate>
                             <xsl:for-each select="tokenize(.,'\s')">
-                                <xsl:if test="matches(.,'fl\.?')">
+                                <xsl:if test="matches(., $florish_match)">
                                     <active/>
                                 </xsl:if>
                                 <xsl:if test="matches(.,'active')">
                                     <active/>
                                 </xsl:if>
-                                <xsl:if test="matches(.,'ca\.?')">
+                                <xsl:if test="matches(., $circa_match)">
                                     <circa/>
                                 </xsl:if>
                                 <xsl:if test="matches(.,'[\d]{3,4}')">
@@ -2087,19 +2490,24 @@
                     <xsl:for-each select="$dateStringAnalyzeResultsOne/singleString">
                         <singleDate>
                             <xsl:for-each select="tokenize(.,'\s')">
-                                <xsl:if test="matches(.,'fl\.?')">
+                                <xsl:if test="matches(., $florish_match)">
                                     <active/>
                                 </xsl:if>
                                 <xsl:if test="matches(.,'active')">
                                     <active/>
                                 </xsl:if>
-                                <xsl:if test="matches(.,'ca\.?')">
+                                <xsl:if test="matches(., $circa_match)">
                                     <circa/>
                                 </xsl:if>
-                                <xsl:if test="matches(.,'b\.?')">
+                                <!--
+                                    We have birth and death dates that are 'b' no dot and 'd' no dot. 
+                                -->
+                                <!-- <xsl:if test="matches(.,'b\.?')"> -->
+                                <xsl:if test="matches(.,'b\.*')">
                                     <born/>
                                 </xsl:if>
-                                <xsl:if test="matches(.,'d\.?')">
+                                <!-- <xsl:if test="matches(.,'d\.?')"> -->
+                                <xsl:if test="matches(.,'d\.*')">
                                     <died/>
                                 </xsl:if>
                                 <xsl:if test="matches(.,'[\d]{3,4}')">
@@ -2111,24 +2519,48 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-
-        <!-- <xsl:for-each select="$dateStringAnalyzeResultsTwo"> -->
-        <!--     <xsl:message> -->
-        <!--         <xsl:text>art: </xsl:text> -->
-        <!--         <xsl:copy-of select="."></xsl:copy-of> -->
-        <!--     </xsl:message> -->
-        <!-- </xsl:for-each> -->
-
+        
         <!-- Now create the existDates -->
 
+        <!-- <xsl:message> -->
+        <!--     <xsl:text>0art: </xsl:text> -->
+        <!--     <xsl:copy-of select="$dateStringAnalyzeResultsTwo"/> -->
+        <!-- </xsl:message> -->
+
         <xsl:choose>
-            <xsl:when test="not($dateStringAnalyzeResultsTwo/normalizedValue)">
+            <!-- <xsl:when test="not($dateStringAnalyzeResultsTwo/normalizedValue)"> -->
+            <xsl:when test="not($dateStringAnalyzeResultsTwo//normalizedValue)">
                 <!-- Do nothing -->
             </xsl:when>
             <xsl:when test="$dateStringAnalyzeResultsTwo/empty">
                 <!-- Do nothing -->
             </xsl:when>
+            <xsl:when test="($dateStringAnalyzeResultsTwo/fromDate/active != '' and $dateStringAnalyzeResultsTwo/fromDate/active &gt; $this_year) or
+                            ($dateStringAnalyzeResultsTwo/toDate/active != '' and $dateStringAnalyzeResultsTwo/toDate/active &gt; $this_year) or
+                            ($dateStringAnalyzeResultsTwo//normalizedValue != '' and $dateStringAnalyzeResultsTwo//normalizedValue &gt; $this_year)">
+                <!--
+                    Test that the date holds something we can convert to a number, or we will get an error:
+                    
+                    fn: /data/source/findingAids/nwda/eastern_washington_state_historical_society_northwest_museum_of_arts_and_culture/UAKMsSC1.xml
+                    Validation error on line 2465 of eadToCpf.xsl:
+                    FORG0001: Cannot convert string to double: ""
+
+
+                    Do nothing (because the date is bad and will throw a validation error from jing). This
+                    date is suspicious, but is also more than that since the other suspicious types don't
+                    cause validation errors.
+
+                    Added Oct 1 2014 to capture dates in the future which have been slipping through.
+                    
+                    xlf /data/source/findingAids/nwda/pacific_lutheran_university_archives_and_special_collections_department/OPVELCA7a4_161.xml
+                    
+                    <persname role="subject" encodinganalog="600" rules="dacs">Lock, Otto,
+                    1913-4919 </persname>
+                -->
+            </xsl:when>
+
             <xsl:when test="$dateStringAnalyzeResultsTwo/fromDate or $dateStringAnalyzeResultsTwo/toDate">
+
                 <xsl:variable name="suspicousDateRange">
                     <xsl:choose>
                         <xsl:when test="$dateStringAnalyzeResultsTwo/fromDate/active or
@@ -2136,8 +2568,14 @@
                             <xsl:choose>
                                 <xsl:when test="$dateStringAnalyzeResultsTwo/toDate != ''">
                                     <xsl:choose>
+                                        <!-- Opps. Backward test should be &gt; -->
+                                        <!-- <xsl:when -->
+                                        <!--     test="$dateStringAnalyzeResultsTwo/fromDate/normalizedValue &lt; -->
+                                        <!--           $dateStringAnalyzeResultsTwo/toDate/normalizedValue"> -->
+                                        <!--     <xsl:text>yes</xsl:text> -->
+                                        <!-- </xsl:when> -->
                                         <xsl:when
-                                            test="$dateStringAnalyzeResultsTwo/fromDate/normalizedValue &lt;
+                                            test="$dateStringAnalyzeResultsTwo/fromDate/normalizedValue &gt;
                                                   $dateStringAnalyzeResultsTwo/toDate/normalizedValue">
                                             <xsl:text>yes</xsl:text>
                                         </xsl:when>
@@ -2151,6 +2589,12 @@
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:when>
+
+                        <!--
+                            Consider testing "active" here, or moving inside the active test above. (Really?)
+                            Birth+15 gt death is suspicious, and this code checks that. However,
+                            active_from+15 gt active_to could be ok, and this code doesn't handle that.
+                        -->
                         <xsl:when test="$dateStringAnalyzeResultsTwo/toDate != ''">
                             <xsl:choose>
                                 <xsl:when
@@ -2168,49 +2612,88 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
+
                 <existDates>
                     <xsl:if test="$suspicousDateRange='yes'">
                         <xsl:attribute name="localType">
-                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#SuspiciousDate</xsl:text>
+                            <xsl:value-of select="$av_suspiciousDate"/>
+                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#SuspiciousDate</xsl:text> -->
                         </xsl:attribute>
                     </xsl:if>
                     <dateRange>
                         <xsl:for-each select="$dateStringAnalyzeResultsTwo/fromDate">
-                            <fromDate>
-                                <xsl:attribute name="localType">
-                                    <xsl:choose>
-                                        <xsl:when test="active">
-                                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Active</xsl:text>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Birth</xsl:text>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:attribute>
-                                <xsl:if test="circa">
-                                    <xsl:attribute name="notBefore">
-                                        <xsl:number value="number(normalizedValue)-3" format="0001"/>
-                                    </xsl:attribute>
-                                    <xsl:attribute name="notAfter">
-                                        <xsl:number value="number(normalizedValue)+3" format="0001"/>
-                                    </xsl:attribute>
-                                </xsl:if>
-                                <xsl:attribute name="standardDate">
-                                    <xsl:number value="normalizedValue" format="0001"/>
-                                </xsl:attribute>
-                                <xsl:if test="active">
-                                    <xsl:text>active </xsl:text>
-                                </xsl:if>
-                                <xsl:if test="circa">
-                                    <xsl:text>approximately </xsl:text>
-                                </xsl:if>
-                                <xsl:value-of select="value"/>
-                            </fromDate>
+                            <!-- <xsl:message> -->
+                            <!--     <xsl:text>fd: </xsl:text> -->
+                            <!--     <xsl:copy-of select="."/> -->
+                            <!-- </xsl:message> -->
+                            <xsl:choose>
+                                <!--
+                                    Empty or not a number. Jan 5 2015 discover a NaN fromDate in /data/source/findingAids/ahub/f_24292.xml
+                                    
+                                    Unclear how testing . ever worked.
+                                    
+                                    <fromDate>
+                                        <normalizedValue>1642</normalizedValue>
+                                        <value>1642</value>
+                                    </fromDate>
+                                    <toDate>
+                                        <normalizedValue>1693</normalizedValue>
+                                        <value>1693</value>
+                                    </toDate>
+                                -->
+                                <!-- <xsl:when test=".='' or number(.) != ."> -->
+                                <!-- <xsl:when test=".='' or not(string(.) castable as xs:integer)"> -->
+                                <xsl:when test="normalizedValue = '' or not(string(normalizedValue) castable as xs:integer)">
+                                    <!-- <xsl:if test=". != '' and not(string(.) castable as xs:integer)"> -->
+                                    <!--     <xsl:message> -->
+                                    <!--         <xsl:text>not castable: </xsl:text> -->
+                                    <!--         <xsl:value-of select="."/> -->
+                                    <!--     </xsl:message> -->
+                                    <!-- </xsl:if> -->
+                                    <fromDate/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <fromDate>
+                                        <xsl:attribute name="localType">
+                                            <xsl:choose>
+                                                <xsl:when test="active">
+                                                    <xsl:value-of select="$av_active"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="$av_born"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:attribute>
+                                        <xsl:if test="circa">
+                                            <xsl:attribute name="notBefore">
+                                                <xsl:number value="number(normalizedValue)-3" format="0001"/>
+                                            </xsl:attribute>
+                                            <xsl:attribute name="notAfter">
+                                                <xsl:number value="number(normalizedValue)+3" format="0001"/>
+                                            </xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:attribute name="standardDate">
+                                            <xsl:number value="normalizedValue" format="0001"/>
+                                        </xsl:attribute>
+                                        <xsl:if test="active">
+                                            <xsl:text>active </xsl:text>
+                                        </xsl:if>
+                                        <xsl:if test="circa">
+                                            <xsl:text>approximately </xsl:text>
+                                        </xsl:if>
+                                        <xsl:value-of select="value"/>
+                                    </fromDate>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:for-each>
-
+                        
                         <xsl:for-each select="$dateStringAnalyzeResultsTwo/toDate">
                             <xsl:choose>
-                                <xsl:when test=".=''">
+                                <!--
+                                    Empty or not a number. Jan 5 2015 discover a NaN fromDate in /data/source/findingAids/ahub/f_24292.xml
+                                    Add NaN test here in toDate as well.
+                                -->
+                                <xsl:when test="normalizedValue = '' or not(string(normalizedValue) castable as xs:integer)">
                                     <toDate/>
                                 </xsl:when>
                                 <xsl:otherwise>
@@ -2218,10 +2701,10 @@
                                         <xsl:attribute name="localType">
                                             <xsl:choose>
                                                 <xsl:when test="active">
-                                                    <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Active</xsl:text>
+                                                    <xsl:value-of select="$av_active"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Death</xsl:text>
+                                                    <xsl:value-of select="$av_died"/>
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:attribute>
@@ -2256,7 +2739,7 @@
 
                     <existDates>
                         <dateRange>
-                            <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth">
+                            <fromDate localType="{$av_born}">
                                 <xsl:if test="circa">
                                     <xsl:attribute name="notBefore">
                                         <xsl:number value="number(normalizedValue)-3" format="0001"/>
@@ -2279,11 +2762,12 @@
                 </xsl:for-each>
             </xsl:when>
             <xsl:when test="$dateStringAnalyzeResultsTwo/singleDate[died]">
+
                 <xsl:for-each select="$dateStringAnalyzeResultsTwo/singleDate[died]">
                     <existDates>
                         <dateRange>
                             <fromDate/>
-                            <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death">
+                            <toDate localType="{$av_died}">
                                 <xsl:if test="circa">
                                     <xsl:attribute name="notBefore">
                                         <xsl:number value="number(normalizedValue)-3" format="0001"/>
@@ -2305,11 +2789,12 @@
                 </xsl:for-each>
             </xsl:when>
             <xsl:when test="$dateStringAnalyzeResultsTwo/singleDate[active]">
+
                 <xsl:for-each select="$dateStringAnalyzeResultsTwo/singleDate[active]">
                     <existDates>
                         <dateRange>
                             <fromDate/>
-                            <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Active">
+                            <toDate localType="{$av_active}">
                                 <xsl:if test="circa">
                                     <xsl:attribute name="notBefore">
                                         <xsl:number value="number(normalizedValue)-3" format="0001"/>
@@ -2330,6 +2815,12 @@
                     </existDates>
                 </xsl:for-each>
             </xsl:when>
+            <xsl:otherwise>
+                <xsl:message>
+                    <xsl:text>date unchecked: </xsl:text>
+                    <xsl:copy-of select="$dateStringAnalyzeResultsTwo"/>
+                </xsl:message>
+            </xsl:otherwise>
         </xsl:choose>
 
     </xsl:template> <!-- end existDateFromPersname -->
@@ -2399,5 +2890,53 @@
         </bioghist>
         <xsl:apply-templates select="bioghist" mode="bh"/>
     </xsl:template>
+
+    <!-- <xsl:template name="tpt_repository"> -->
+    <!--     <xsl:param name="repo"/> -->
+    <!--     <xsl:variable name="pass1"> -->
+    <!--         <xsl:for-each select="$repo/(repository|corpname)"> -->
+    <!--             <xsl:value-of select="concat(., ', and ')"/> -->
+    <!--         </xsl:for-each> -->
+    <!--         <xsl:for-each select="$repo/text()"> -->
+    <!--             <xsl:value-of select="concat(., ' ')"/> -->
+    <!--         </xsl:for-each> -->
+    <!--     </xsl:variable> -->
+    <!--     <xsl:variable name="pass2"> -->
+    <!--         <xsl:value-of select="normalize-space(replace($pass1, ', and$', ''))"/> -->
+    <!--     </xsl:variable> -->
+    <!--     <xsl:copy-of select="$pass2"/> -->
+    <!--     <xsl:if test="false()"> -->
+    <!--         <xsl:choose> -->
+    <!--             <xsl:when test="not($repo/repo_info//corpname)"> -->
+    <!--                 <xsl:variable name="temp"> -->
+    <!--                     <xsl:for-each select="$repo/repo_info/(*|node()|text())"> -->
+    <!--                         <xsl:value-of select="concat(., ' ')"/> -->
+    <!--                     </xsl:for-each> -->
+    <!--                 </xsl:variable> -->
+    <!--                 <xsl:message> -->
+    <!--                     <xsl:value-of select="concat('found1: ', normalize-space(replace($temp, ', and$', '')))"/> -->
+    <!--                 </xsl:message> -->
+    <!--             </xsl:when> -->
+    <!--             <xsl:otherwise> -->
+    <!--                 <xsl:for-each select="$otherData/repo_info//corpname"> -->
+    <!--                     <xsl:if -->
+    <!--                         test="preceding-sibling::corpname and not(ends-with(normalize-space(preceding-sibling::corpname[1]),','))"> -->
+    <!--                         <xsl:text>, </xsl:text> -->
+    <!--                     </xsl:if> -->
+    <!--                     <xsl:variable name="temp"> -->
+    <!--                         <xsl:for-each select="*|node()|text()"> -->
+    <!--                             <xsl:value-of select="concat(., ' ')"/> -->
+    <!--                         </xsl:for-each> -->
+    <!--                     </xsl:variable> -->
+    <!--                     <xsl:value-of select="normalize-space(replace($temp, ', and$', ''))"/> -->
+    <!--                     <xsl:message> -->
+    <!--                         <xsl:value-of select="'found2: '"/> -->
+    <!--                         <xsl:value-of select="normalize-space(replace($temp, ', and$', ''))"/> -->
+    <!--                     </xsl:message> -->
+    <!--                 </xsl:for-each> -->
+    <!--             </xsl:otherwise> -->
+    <!--         </xsl:choose> -->
+    <!--     </xsl:if> -->
+    <!-- </xsl:template> -->
 
 </xsl:stylesheet>
