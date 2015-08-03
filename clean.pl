@@ -22,6 +22,12 @@
 # Change file in place. Backup original files before running this script.
 # clean.pl file.xml
 
+# Only fix strange characters, \x2013 \x2014, and non-breaking space, 
+# clean.pl --chars file.xml
+
+# report on what will be done
+# clean.pl --debug file.xml
+
 # > mkdir temp
 # > find /data/source/findingAids/lds/ -type f | perl -ne 'print "../clean.pl $_";' > fix.sh
 # > . fix.sh 
@@ -47,6 +53,12 @@ use utf8;
 use open qw(:std :utf8);
 use Getopt::Long;
 my $debug = 0;
+my $full = 0;
+my $chars_only = 0;
+my $verbose = 0;
+
+
+my @remove = ("\x200f");
 
 # Used to fix non-standard character entities. Hash keys are case sensitive.
 my %ent = ('eacute' => '&#233;',
@@ -71,7 +83,12 @@ main();
 sub main
 {
     $| = 1; # unbuffer stdout
-    GetOptions( 'debug!' => \$debug);
+    GetOptions( 'debug!' => \$debug, 'chars!' => \$chars_only, 'verbose!' => \$verbose);
+
+    if (! $chars_only)
+    {
+        $full = 1;
+    }
 
     my $out;
     my $tmp_fn = "tmp_$$.txt";
@@ -96,9 +113,19 @@ sub work
     my $address;  # = read_file("vt_address.xml");
     my $contact;  # = read_file("vt_contact.xml"); 
 
-    if ($debug)
+    if ($verbose || $debug)
     {
         print "file: $ARGV[0]\n";
+    }
+
+    if ($debug)
+    {
+        # \x200F, right-to-left character
+
+        if ($_ =~ m/\x{200f}/sm)
+        {
+            print "clean: Will remove <U+200F> \x{200f} the right-to-left character.\n";
+        }
 
         # Replace any unicode hex 2014 em dash, also hex 2013 en dash with a hyphen.
 
@@ -141,9 +168,12 @@ sub work
         # $_ =~ s/(<?xml.*?>)(.*?)(<ead.*?>)/$1fix-data-here$3/sm;
 
         # \s doesn't seem to make sense. We only do the XML header if there are non whitespace chars.
-        # if ($_ =~ m/(<\?xml.*?>)([\S\s]+?)(<ead.*?>)/sm)
 
-        if ($_ =~ m/(<\?xml.*?>)([\S]+?)(<ead.*?>)/sm)
+        # May 12 2015 this didn't work to print the debug message. I'm pretty sure we are looking for a
+        # mixture of \S and \s, and regex are greedy, so we'll get as much of both as possible between ?> and
+        # <ead.  if ($_ =~ m/(<\?xml.*?>)([\S]+?)(<ead.*?>)/sm)
+
+        if ($_ =~ m/(<\?xml.*?>)([\S\s]+?)(<ead.*?>)/sm)
         {
             # Intentionally put the unwanted header on a separate line. Some have a prefixed \n and some
             # don't, but if we want to use | sort | uniq -c we want the message to be consistent.
@@ -158,14 +188,26 @@ sub work
         exit();
     }
 
-    if (1 && ! $debug)
+    
+    if (1 && ! $debug  && ($full || $chars_only))
+    {
+        # Remove the pesky non-printing right-to-left character
+
+        # jun 26 2015. This is tricky because the offending character doesn't print. Happily, linux "less"
+        # displays it as <U+200F>, and emacs will edit it in utf8 mode, although the character doesn't really
+        # display.  
+        $_ =~ s/\x{200f}//smg;
+    }
+
+
+    if (1 && ! $debug && ($full || $chars_only))
     {
         # Remove any of those darned non-breaking spaces. Most of the downstream code won't handle them
         # properly, even though they seem to match \s+
         $_ =~ s/\240/ /smg;
     }
 
-    if (1 && ! $debug)
+    if (1 && ! $debug && ($full || $chars_only))
     {
         # Replace any unicode hex 2014 em dash, also hex 2013 en dash with a hyphen.
 
@@ -220,8 +262,8 @@ sub work
 
         # $_ =~ s/(<?xml.*?>)(.*?)(<ead.*?>)/$1fix-data-here$3/sm;
 
-        # Don't comment out whitespace. (What? the regex below will match whitespace only, as well as a
-        # mixture.)
+        # May 12 2015 Comment out a non-greedy combination of \S and \s between ?> and <ead. I suspect .+? would work just
+        # as well.
 
         if ($_ =~ m/<\?xml.*?>([\S\s]+?)<ead.*?>/sm)
         {
@@ -232,7 +274,7 @@ sub work
             $proci =~ s/\s*-->//smg;
             if ($proci)
             {
-                $_ =~ s/(<\?xml.*?>)([\S\s]+?)(<ead.*?>)/$1$<!-- $proci -->$3/sm;
+                $_ =~ s/(<\?xml.*?>)([\S\s]+?)(<ead.*?>)/$1<!-- $proci -->$3/sm;
                 
                 # The old substitution which always added an XML comment
                 # $_ =~ s/fix-data-here/<!-- $proci -->/sm;

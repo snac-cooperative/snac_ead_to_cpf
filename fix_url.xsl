@@ -64,6 +64,8 @@
     <xsl:variable name="unc" select="document('unc_e2u.xml')"/>
 
     <xsl:variable name="sia" select="document('sia_e2u.xml')"/>
+
+    <xsl:variable name="uct" select="document('uct_e2u.xml')"/>
     
     <xsl:strip-space elements="*"/>
     <xsl:output indent="yes" method="xml"/>
@@ -600,23 +602,27 @@
                     </file>
                 </xsl:when>
                 <xsl:when test="$repo = 'uct' or $repo = 'uct_missing'">
-                    <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/>
+                    <xsl:variable name="url" select="replace($uct/container/row[@file=$base]/@url, '.xml$', '')"/>
                     <file url="{$url}">
                         <xsl:value-of select="$ofile"/>
                     </file>
+                    <!-- <xsl:variable name="ead" select="document($fn)"/> -->
+                    <!-- <xsl:variable name="url" select="$ead/ead/eadheader/eadid/@url"/> -->
+                    <!-- <file url="{$url}"> -->
+                    <!--     <xsl:value-of select="$ofile"/> -->
+                    <!-- </file> -->
                 </xsl:when>
                 <xsl:when test="$repo = 'ude' or $repo = 'ude_missing'">
-                    <xsl:variable name="ead" select="document($fn)"/>
-                    <xsl:variable name="eadid" select="replace(normalize-space($ead/ead/eadheader/eadid), '(.*)\.xml', '$1')"/>
                     <!--
-                        # xml, use findaids/xml and .xml
-                        http://www.lib.udel.edu/ud/spec/findaids/xml/mss0093_0001.xml
+                        Base url of the html finding aids
+                        http://library.udel.edu/static/purl.php?
                         
-                        # html, use findaids/html and .html
-                        http://www.lib.udel.edu/ud/spec/findaids/html/mss0093_0001.html
+                        A check shows that $strict_base is always the same as $eadid, so use $strict_base
+                        which is somewhat faster.
                     -->
-                    <file url="{concat('http://www.lib.udel.edu/ud/spec/findaids/html/', $eadid, '.html')}">
+                    <!-- <xsl:variable name="ead" select="document($fn)"/> -->
+                    <!-- <xsl:variable name="eadid" select="replace(normalize-space($ead/ead/eadheader/eadid), '(.*)\.xml', '$1')"/> -->
+                    <file url="{concat('http://library.udel.edu/static/purl.php?', $strict_base)}">
                         <xsl:value-of select="$ofile"/>
                     </file>
                 </xsl:when>

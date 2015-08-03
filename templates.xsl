@@ -106,7 +106,7 @@
                 </agencyName>
             </maintenanceAgency>
             <languageDeclaration>
-                <language languageCode="eng">
+                <language languageCode="{$otherData/languageOfDescription}">
                     <xsl:value-of select="$otherData/languageOfDescription"/>
                 </language>
                 <script scriptCode="Latn">Latin Alphabet</script>
@@ -302,6 +302,9 @@
             </xsl:choose>
 
             <relations>
+                <!-- 
+                     Context here is a single entity.
+                -->
                 <xsl:choose>
                     <xsl:when test="@source='origination'">
                         <xsl:call-template name="relationsOrigination">
@@ -324,11 +327,9 @@
                         <xsl:choose>
                             <xsl:when test="@source='origination'">
                                 <xsl:value-of select="$av_creatorOf"/>
-                                <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#creatorOf</xsl:text> -->
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="$av_referencedIn"/>
-                                <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#referencedIn</xsl:text> -->
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:attribute>
@@ -356,7 +357,7 @@
                         less cpf_qa/oac/chs/ms_3598.c01.xml
                     -->
                     <relationEntry>
-                        <xsl:variable name="parsed_unit_title">
+                        <xsl:variable name="parsed_unittitle">
                             <xsl:call-template name="parse_unittitle">
                                 <!--
                                     param name="otherData" tunneled from  tpt_process calling template CpfRoot in eadToCpf.xsl
@@ -380,18 +381,14 @@
                         </xsl:variable>
 
                         <!--
-                            There are rare instances with no unittitle, which results in an empty $parsed_unit_title. We
+                            There are rare instances with no unittitle, which results in an empty $parsed_unittitle. We
                             really don't want relationEntry to be empty, so if there's no unittitle, try to
                             use <repository>. <citation> always uses repo_info, although it surrounds it with
                             ( and ). 
                         -->
                         <xsl:choose>
-                            <xsl:when test="string-length($parsed_unit_title) &gt; 0">
-                                <!-- <xsl:message> -->
-                                <!--     <xsl:text>using parsed_unit_title:</xsl:text> -->
-                                <!--     <xsl:value-of select="$parsed_unit_title"/> -->
-                                <!-- </xsl:message> -->
-                                <xsl:value-of select="$parsed_unit_title"/>
+                            <xsl:when test="string-length($parsed_unittitle) &gt; 0">
+                                <xsl:value-of select="$parsed_unittitle"/>
                             </xsl:when>
                             <xsl:when test="string-length($repo_info) > 3">
                                 <xsl:value-of select="$repo_info"/>
@@ -431,22 +428,32 @@
             
             In the past, utsu/ULA-mss258.xml had a leading space before the url. Add normalize-space() here in case
             any new data has a similar issue.
-        -->
-        <xsl:variable name="short_name" select="replace(@fn, '/data/source/', '')"/>
-        <xsl:variable name="url" select="$file2url/container/file[text() = $short_name]/@url"/>
-        <xsl:attribute name="xlink:href">
-            <!--
-                Changing ' ' to '_' is an odd thing to do in a URL. It broke a URL, and since there's no clear
-                reason what it was supposed to fix, I'm changing it to '%20' which is more URL-ish.
-                
-                /data/source/findingAids/afl-ufl/ufms80gm.xml
-                
-                Good:
-                http://www.library.ufl.edu/spec/manuscript/guides/Locke%20Papers.htm
+            
+            $trim_stop_string defaults to 'findingAids'. Variable $short_name will be something similar to:
+            findingAids/repo/file1234.xml
 
-                Broken:
-                http://www.library.ufl.edu/spec/manuscript/guides/Locke_Papers.htm
-            -->
+            Change:
+            /data/source/findingAids/colu/nnc-ua/ldpd_8429267_ead.xml
+            
+            To:
+            findingAids/colu/nnc-ua/ldpd_8429267_ead.xml
+        -->
+        <!-- <xsl:variable name="short_name" select="replace(@fn, '/data/source/', '')"/> -->
+        <xsl:variable name="short_name" select="replace(@fn, concat('^.*(', $trim_stop_string, ')'), '$1')"/>
+        <xsl:variable name="url" select="$file2url/container/file[text() = $short_name]/@url"/>
+        <!--
+            Changing ' ' to '_' is an odd thing to do in a URL. It broke a URL, and since there's no clear
+            reason what it was supposed to fix, I'm changing it to '%20' which is more URL-ish.
+            
+            /data/source/findingAids/afl-ufl/ufms80gm.xml
+            
+            Good:
+            http://www.library.ufl.edu/spec/manuscript/guides/Locke%20Papers.htm
+            
+            Broken:
+            http://www.library.ufl.edu/spec/manuscript/guides/Locke_Papers.htm
+        -->
+        <xsl:attribute name="xlink:href">
             <!-- <xsl:value-of select="replace(normalize-space($url), ' ', '_')"/> -->
             <xsl:value-of select="replace(normalize-space($url), ' ', '%20')"/>
             <xsl:if test="string-length($url) = 0">
@@ -464,7 +471,7 @@
                     
                     grep tbdfname: qa.log | sort -u | wc -l
                 -->
-                <xsl:value-of select="concat('warning: url: Finding Aid URL TBD tbdfname: ', @fn, $cr)"/>
+                <xsl:value-of select="concat('error: url: Finding Aid URL TBD tbdfname: ', @fn, $cr)"/>
                 <xsl:value-of select="concat('short_name: ', $short_name, $cr)"/>
                 <xsl:copy-of select="$file2url"/>
             </xsl:message>
@@ -472,139 +479,206 @@
         </xsl:attribute>
     </xsl:template>
 
+    <!--
+        May 19 2015 @recordId is not the recordId from the <ead> but is the abbreviated file name of the
+        related cpfRelation. And $recordId is the current cpfRelation-abbreviated-filename. So, when @recordId
+        = $recordId, then this is our self-cpfRelation. It is illogical to create a standard self-cpfRelation,
+        however, if there is an ARK, then we want to create a (special) sameAs cpfRelation for the
+        self-cpfRelation. Naming an attribute "recordId" was in hindsight a bad idea.
+        
+        recordId="bnf/FRBNFEAD000004234.c01"
+
+        May 11 2015 These are cpfRelations from the origination entity or entities. In otherwords, cpfRelation
+        elements for .c files. For BnF (and perhaps eventually other repositories) this is where sameAs
+        cpfRelations go.
+        
+        May 11 2015 Add remove URL href for sameAs cpfRelations, added for BnF records that have
+        an ARK in the @authfilenumber. 
+        
+        May 12 2015 Maybe more generic to check @external_href.
+    -->
     <xsl:template name="relationsOrigination">
         <xsl:param name="otherData" tunnel="yes"/>
         <xsl:param name="entitiesForCPFRelations" tunnel="yes"/>
         <xsl:variable name="recordId" select="@recordId"/>
         <xsl:variable name="ent_normalFinal" select="normalFinal"/> <!-- entity normal final -->
 
-        <xsl:for-each select="$entitiesForCPFRelations/entity[not(@recordId = $recordId)]">
-            <cpfRelation xmlns="urn:isbn:1-931666-33-4" xlink:type="simple">
+        <!-- first the non-self cpfRelations -->
+        <xsl:for-each
+            select="$entitiesForCPFRelations/entity[not(@recordId = $recordId)]">
+            <xsl:call-template name="cpfrel_core">
+                <xsl:with-param name="sameas_yes" select="false()" as="xs:boolean"/>
+            </xsl:call-template>
+        </xsl:for-each>
+
+        <!--
+            then do the self-cpfRelations, if they meet all necessary criteria
+            
+            jun 11 2015 was normal/persname/@authfilenumber which may explain why no corporateBody entities
+            got sameAs cpfRelations
+        -->
+        <xsl:for-each
+            select="$entitiesForCPFRelations/entity[(@recordId = $recordId) and normal/*/@authfilenumber]">
+            <xsl:call-template name="cpfrel_core">
+                <xsl:with-param name="sameas_yes" select="true()" as="xs:boolean"/>
+            </xsl:call-template>
+        </xsl:for-each>
+    </xsl:template> <!-- relationsOrigination -->
+
+    <!--
+        It is interesting that "The attribute axis starting at a document node will never select anything"
+        requires some container element in the root, even in variables. Var cpfrel has <container>, and all
+        uses of $cpfrel below must be $cpfrel/container.
+    -->
+    
+    <xsl:template name="cpfrel_core">
+        <xsl:param name="sameas_yes"/>
+        <xsl:param name="rfile_yes"/>
+        <xsl:param name="cfile_correspondent_yes"/>
+    
+    <!-- assume the context is set when the template is called -->
+
+        <xsl:variable name="cpfrel">
+            <container
+                normalFinal="{normalFinal}"
+                recordId="{@recordId}">
+                <!--
+                    Make ARK based hrefs into external hrefs just like any other external href. By doing this
+                    we assume that there will never be two kinds of hrefs for a single cpfRelation. Two hrefs
+                    would be impossible, right?
+                    
+                    jun 12 2015 Again the "normal/persname/@authfilenumber" which excludes corpname. Changed to /*/
+                    Also: in eadToCpf.xsl, mode_authfilenumber also had "persname" in the match, so that was broken too.
+                    Also: don't check sameas_yes for xlink:href. We always want the xlink:href if authfilenumber is available.
+                    
+                    jun 22 2015 Generate attr xlink:href here inside variable $cpfrel, and below do the
+                    requisite testing of sameas_yes. Must have xlink:href with sameAs, but must not have
+                    descriptiveNote/p/span with sameAs.
+                -->
+                <xsl:attribute name="xlink:href">
+                    <xsl:choose>
+                        <!-- <xsl:when test="normal/*/@authfilenumber and $sameas_yes"> -->
+                        <xsl:when test="normal/*/@authfilenumber">
+                            <xsl:value-of select="normal/*/@authfilenumber"/>
+                        </xsl:when>
+                    </xsl:choose>
+                </xsl:attribute>
+
                 <xsl:attribute name="xlink:role">
                     <xsl:choose>
                         <xsl:when test="normalFinal/corpname">
                             <xsl:value-of select="$av_CorporateBody"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#CorporateBody</xsl:text> -->
                         </xsl:when>
                         <xsl:when test="normalFinal/persname">
                             <xsl:value-of select="$av_Person"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Person</xsl:text> -->
                         </xsl:when>
                         <xsl:when test="normalFinal/famname">
                             <xsl:value-of select="$av_Family"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Family</xsl:text> -->
                         </xsl:when>
                     </xsl:choose>
                 </xsl:attribute>
+
+                <!--
+                    May 12 2015 BnF has sameAs cpfRelations in the arcrole. We flag those with @is_sameas='1'
+                    
+                    snac:associatedWith, snac:correspondedWith 
+                    
+                    In this loop, $recordId is the .cxx. If either .c01 or .r00x is a correspondent
+                    then both are correspondedWith. Note that .cxx will never be a correspondent, so
+                    we don't test for that here. See template relationsReferenced.
+                    
+                    <xsl:when test="@correspondent='yes' or
+                    $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes'">
+                -->
                 <xsl:attribute name="xlink:arcrole">
-                    <!-- <xsl:message> -->
-                    <!--     <xsl:value-of select="concat($recordId, ' ', $ent_normalFinal,' creates cpfRel for ', @recordId, ' ', normalFinal, $cr)"/> -->
-                    <!--     <xsl:value-of select="concat('cpfRel is ', -->
-                    <!--                           @correspondent='yes', -->
-                    <!--                           ' I am ', -->
-                    <!--                           $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes', -->
-                    <!--                           $cr)"/> -->
-                    <!-- </xsl:message> -->
                     <xsl:choose>
-                        <!--
-                            snac:associatedWith, snac:correspondedWith 
-                            
-                            In this loop, $recordId is the .cxx. If either .c01 or .r00x is a correspondent
-                            then both are correspondedWith. Note that .cxx will never be a correspondent, so
-                            we don't test for that here. See template relationsReferenced.
-                        -->
-                        <!-- <xsl:when test="@correspondent='yes' or $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes'"> -->
+                        <xsl:when test="$sameas_yes">
+                            <xsl:value-of select="$av_sameAs"/>
+                        </xsl:when>
                         <xsl:when test="@correspondent='yes'">
                             <xsl:value-of select="$av_correspondedWith"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#correspondedWith</xsl:text> -->
+                        </xsl:when>
+                        <xsl:when test="$rfile_yes and $cfile_correspondent_yes='yes'">
+                            <xsl:value-of select="$av_correspondedWith"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="$av_associatedWith"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#associatedWith</xsl:text> -->
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:attribute>
-                <relationEntry>
-                    <xsl:value-of select="normalFinal"/>
-                </relationEntry>
+            </container>
+        </xsl:variable> <!-- $cpfrel -->
+
+        <!--
+            jun 22 2015: No change here. The existing comment about descriptiveNote is correct. Too bad this
+            concept didn't get propogated over to AnF until today. However, there was no sameAs test for the
+            xlink:href, so even this code wasn't quite correct.
+
+            sameAs cpfRelations do not use descriptiveNote 
+        -->
+
+        <cpfRelation xmlns="urn:isbn:1-931666-33-4"
+                     xlink:type="simple"
+                     xlink:role="{$cpfrel/container/@xlink:role}"
+                     xlink:arcrole="{$cpfrel/container/@xlink:arcrole}">
+            <xsl:if test="$sameas_yes and string-length($cpfrel/container/@xlink:href) > 1">
+                <xsl:attribute name="xlink:href" select="$cpfrel/container/@xlink:href"/>
+            </xsl:if>
+            <relationEntry>
+                <xsl:value-of select="$cpfrel/container/@normalFinal"/>
+            </relationEntry>
+            <xsl:if test="not($sameas_yes)">
                 <descriptiveNote>
                     <p>
                         <span localType="{$av_extractRecordId}">
-                            <xsl:value-of select="@recordId"/>
+                            <xsl:value-of select="$cpfrel/container/@recordId"/>
                         </span>
                     </p>
                 </descriptiveNote>
-            </cpfRelation>
-        </xsl:for-each>
-    </xsl:template> <!-- relationsOrigination -->
+            </xsl:if>
+        </cpfRelation>
+    </xsl:template> <!-- cpfrel_core, called from relationsOrigination -->
     
+    <!--
+        May 19 2015 Daniel says to create sameAs for all entities with ARK (authfilenumber) values.
+
+        May 11 2015 These are cpfRelations from non-origination entity or entities. In other words,
+        cpfRelation elements for .r files.
+        
+        May 18 2015 .r files should not be creating sameAs entries, so skip those. When not skipped a sameAs
+        entry simply generates a duplicate of the cpfRelation back to the .cxx file.
+    -->
     <xsl:template name="relationsReferenced">
         <xsl:param name="otherData" tunnel="yes"/>
         <xsl:param name="entitiesForCPFRelations" tunnel="yes"/>
         <xsl:variable name="recordId" select="@recordId"/>
         <xsl:variable name="ent_normalFinal" select="normalFinal"/> <!-- entity normal final -->
 
+        <!-- <xsl:for-each select="$entitiesForCPFRelations/entity[@source='origination' and (not(@is_sameas) or @is_sameas != '1')]"> -->
+        <!-- <xsl:for-each select="$entitiesForCPFRelations/entity[@source='origination' or @is_sameas = '1']"> -->
+
         <xsl:for-each select="$entitiesForCPFRelations/entity[@source='origination']">
-            <cpfRelation xmlns="urn:isbn:1-931666-33-4" xlink:type="simple">
-                <xsl:attribute name="xlink:role">
-
-                    <xsl:choose>
-                        <xsl:when test="normalFinal/corpname">
-                            <xsl:value-of select="$av_CorporateBody"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#CorporateBody</xsl:text> -->
-                        </xsl:when>
-                        <xsl:when test="normalFinal/persname">
-                            <xsl:value-of select="$av_Person"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Person</xsl:text> -->
-                        </xsl:when>
-                        <xsl:when test="normalFinal/famname">
-                            <xsl:value-of select="$av_Family"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#Family</xsl:text> -->
-                        </xsl:when>
-                    </xsl:choose>
-                </xsl:attribute>
-                <xsl:attribute name="xlink:arcrole">
-                    <!-- <xsl:message> -->
-                    <!--     <xsl:value-of select="concat($recordId, ' ', $ent_normalFinal,' creates cpfRel for ', @recordId, ' ', normalFinal, $cr)"/> -->
-                    <!--     <xsl:value-of select="concat('cpfRel is ', -->
-                    <!--                           @correspondent='yes', -->
-                    <!--                           ' I am ', -->
-                    <!--                           $entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes', -->
-                    <!--                           $cr)"/> -->
-                    <!-- </xsl:message> -->
-
-                    <xsl:choose>
-                        <!--
-                            snac:associatedWith, snac:correspondedWith
-
-                            In this loop, $recordId is the .rxxx. If either .c01 or .r00x is a correspondent
-                            then both are correspondedWith. See template relationsOrigination.
-                            
-                            Note that .cxx will never be a correspondent, and so I'm fairly sure that testing
-                            @correspondent will never be true, and thus was (is?) a bug.
-                        -->
-                        <!-- <xsl:when test="@correspondent='yes'"> -->
-                        <xsl:when test="$entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent='yes'">
-                            <xsl:value-of select="$av_correspondedWith"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#correspondedWith</xsl:text> -->
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="$av_associatedWith"/>
-                            <!-- <xsl:text>http://socialarchive.iath.virginia.edu/control/term#associatedWith</xsl:text> -->
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:attribute>
-                <relationEntry>
-                    <xsl:value-of select="normalFinal/*"/>
-                </relationEntry>
-                <descriptiveNote>
-                    <p>
-                        <span localType="{$av_extractRecordId}">
-                            <xsl:value-of select="@recordId"/>
-                        </span>
-                    </p>
-                </descriptiveNote>
-            </cpfRelation>
+            <xsl:call-template name="cpfrel_core">
+                <xsl:with-param name="rfile_yes" select="true()" as="xs:boolean"/>
+                <xsl:with-param name="cfile_correspondent_yes"
+                                select="$entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent"/>
+            </xsl:call-template>
+        </xsl:for-each>
+        
+        <!-- 
+             Then do the self-cpfRelations, if they meet all necessary criteria.
+             
+             jun 12 2015 was normal/persname/@authfilenumber which may explain why no corporateBody entities
+             got sameAs cpfRelations.
+        -->
+        <xsl:for-each
+            select="$entitiesForCPFRelations/entity[(@recordId = $recordId) and normal/*/@authfilenumber]">
+            <xsl:call-template name="cpfrel_core">
+                <xsl:with-param name="sameas_yes" select="true()" as="xs:boolean"/>
+                <xsl:with-param name="rfile_yes" select="true()" as="xs:boolean"/>
+                <xsl:with-param name="cfile_correspondent_yes"
+                                select="$entitiesForCPFRelations/entity[@recordId = $recordId]/@correspondent"/>
+            </xsl:call-template>
         </xsl:for-each>
     </xsl:template> <!-- relationsReferenced -->
 
@@ -683,7 +757,10 @@
                 
                 <xsl:for-each select="$otherData/geognameGroup">
                     <!--
-                        PLACE, geonames, geonames-cheshire
+                        For how geo data is constructed, see geo.xsl. We prepare all the geographic data in a
+                        batch beforehand because it is a slow process.
+
+                        PLACE, geonames, geonames-cheshire, placeEntry
                         
                         less cpf_qa/umi/bentley/titush.c01.xml
                         less cpf_qa/ahub/soas/196.c01.xml
@@ -844,6 +921,10 @@
 
     <xsl:template name="tpt_bioghist_parse"  xmlns="urn:isbn:1-931666-33-4">
         <xsl:param name="otherData" tunnel="yes"/>
+        <!-- <xsl:message terminate="yes"> -->
+        <!--     <xsl:value-of select="concat('otherdata: ', $cr)"/> -->
+        <!--     <xsl:apply-templates mode="pretty" select="$otherData"/> -->
+        <!-- </xsl:message> -->
         <biogHist>
             <!--
                 Are we copying the attributes mostly for debugging? Copy the attributes from bioghist (which happens to be the context).
@@ -857,6 +938,10 @@
             <xsl:apply-templates select="node()" mode="mode_bioghist"/>
 
             <!--
+                May 14 2015 Add some ability to detect BnF (or any repo) and use a special citation
+                prefix. Relies on <authorizedForm> which was added to <otherData> around line 1684 of
+                eadToCpf.xsl just to support this featured. 
+
                 sep 24 2014 Use new template parse_unittitle, but citation needs a trailing comma, so retain that code.
                 
                 Old: cite_string aka citation. unittitle with child or sibling unitdate. Same code as relationEntry above.
@@ -867,8 +952,23 @@
                 cope correctly with multiple dates. Historically, this has been broken in other ways too
                 (missing space, and so on).
             -->
+
+
+            <xsl:variable name="citation_prefix">
+                <xsl:choose>
+                    <xsl:when test="normalize-space($otherData/authorizedForm) = 'bnf'">
+                        <xsl:text>Extrait de l’instrument de recherche de la </xsl:text>
+                        <!-- <xsl:text>Information extraite de la notice des </xsl:text> -->
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>From the guide to the </xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+
+
             <xsl:variable name="cite_string">
-                <xsl:variable name="temp">
+                <xsl:variable name="parsed_unittitle">
                     <!--
                         Previous unititle code was frail. Update and replace, especially since unittitle is
                         used in two places (here and in relationEntry).
@@ -901,38 +1001,73 @@
                     </xsl:choose>
                 </xsl:variable>
                 <!-- 
-                     Only do the "From the guide..." if we have a unittitle. 
+                     Only do the $citation_prefix (for example "From the guide...") if we have a
+                     unittitle. Don't worry about extra spaces in $cite_string because it is run through
+                     normalize-space() just below.
                      
+                     May 14 2015 Example from BnF:
+
+                     less bnf_cpf_final/bnf/FRBNFEAD000004234.c01.xml
+                     
+                     <citation>Extrait de l’instrument de recherche de la Bibliothèque nationale de
+                     France. Département des arts du spectacle: Fonds Edward Gordon Craig
+                     (FRBNFEAD000004234)</citation>
+
                      Possible formats (trailing commas stripped later, unittitle includes unitdate when
                      available):
-
+                     
                      unittitle-text, (repository-text)
                      unittitle-text
                      repository-text
                 -->
                 <xsl:choose>
-                    <xsl:when test="string-length($temp) &gt; 0">
-                        <xsl:text>From the guide to the </xsl:text>
-                        <xsl:value-of select="normalize-space($temp)"/>
-                        <xsl:if test="string-length($repo_info) > 3">
-                            <xsl:value-of select="concat(', (',$repo_info, ')')"/>
-                        </xsl:if>
+                    <xsl:when test="string-length($parsed_unittitle) &gt; 0">
+                        <xsl:choose>
+                            <xsl:when test="normalize-space($otherData/authorizedForm) = 'bnf'">
+                                <xsl:variable name="trailing_colon">
+                                    <xsl:choose>
+                                        <xsl:when test="string-length($repo_info) > 3">
+                                            <xsl:value-of select="': '"/>
+                                        </xsl:when>
+                                    </xsl:choose>
+                                </xsl:variable>
+                                <xsl:value-of select="concat($citation_prefix, $repo_info, $trailing_colon, $parsed_unittitle)"/>
+                                <xsl:if test="string-length($otherData/eadid) &gt; 0">
+                                    <xsl:value-of select="concat(' (', $otherData/eadid, ')')"/>
+                                </xsl:if>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="$citation_prefix"/>
+                                <xsl:value-of select="normalize-space($parsed_unittitle)"/>
+                                <xsl:if test="string-length($repo_info) > 3">
+                                    <xsl:value-of select="concat(', (',$repo_info, ')')"/>
+                                </xsl:if>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:when>
                     <xsl:when test="string-length($repo_info) > 3">
                         <xsl:value-of select="$repo_info"/>
                     </xsl:when>
                 </xsl:choose>
-            </xsl:variable> <!-- end cite_string -->
+            </xsl:variable> <!-- end cite_string  -->
 
             <!--
+                May 14 2015 Write citation to the log file so we can easily review them for sanity.
+
                 The string can end up with an extra space before comma: "...1924-1932 , (School..."
                 Remove it here with a simple regex.
                 
                 Remove trailing comma too. It doesn't look like snac:removeFinalComma() can deal with
                 whitespace following the final comma, and this regex does that.
             -->
-            <citation>
+            <xsl:variable name="final_citation">
                 <xsl:value-of select="replace(replace(snac:removeDoubleComma(normalize-space($cite_string)), ' ,', ','), ',\s*$', '')"/>
+            </xsl:variable>
+            <xsl:message>
+                <xsl:value-of select="concat('citation: ', $final_citation)"/>
+            </xsl:message>
+            <citation>
+                <xsl:value-of select="$final_citation"/>
             </citation>
         </biogHist>
     </xsl:template> <!-- tpt_bioghist_parse -->
@@ -1959,7 +2094,8 @@
     <xsl:template name="parse_unittitle">
         <xsl:param name="otherData" tunnel="yes"/>
         <!--
-            param name="otherData" tunneled from  tpt_process calling template CpfRoot in eadToCpf.xsl
+            param name="otherData" tunneled from tpt_process (or tpt_proc_inner) calling template CpfRoot in
+            eadToCpf.xsl
         -->
 
         <xsl:variable name="date">
@@ -1996,13 +2132,68 @@
             </xsl:for-each>
         </xsl:variable>
 
+        <!--
+            May 12 2015 BnF shelfmarks use the unitid, and this seems like a fine idea for all EAD extracted
+            CPF. Concat with leading space and trailing dot space. We clean extra space below in $fuller_title
+            and if the date is added, again when concat'ing $fuller_title and $date.
+            
+            /data/source/findingAids/bnf/Hetzel_fund.xml <unitid type="cote">NAF 16932-17152</unitid>
+            less bnf_cpf_final/bnf/Hetzel_fund.c01.xml
+        -->
+        <xsl:variable name="shelfmark_unitid">
+            <xsl:for-each select="$otherData/did/unitid">
+                <xsl:value-of select="concat(' ', text(),'. ')"/>
+            </xsl:for-each>
+        </xsl:variable>
+
+        <xsl:variable name="fuller_title">
+            <xsl:value-of select="snac:removeDoubleDot(
+                                  snac:dotComma2Dot(
+                                  snac:removeFloatingDot(
+                                  snac:removeFinalComma(
+                                  snac:fixSpaceComma(
+                                  snac:removeDoubleComma(
+                                  normalize-space(
+                                  concat($no_dup_title, $shelfmark_unitid))))))))"/>
+        </xsl:variable>
+
         <xsl:if test="$date">
             <xsl:value-of select="snac:removeFinalComma(
                                   snac:fixSpaceComma(
                                   snac:removeDoubleComma(
                                   normalize-space(
-                                  concat($no_dup_title, ', ', $date)))))"/>
+                                  concat($fuller_title, ', ', $date)))))"/>
         </xsl:if>
     </xsl:template> <!-- end of parse_unittitle -->
 
+    <!--
+        This seems to be a pretty printer for xsl:message (after being modified with its own mode). Created by
+        John Morgan. From http://www.dpawson.co.uk/xsl/sect2/pretty.html
+    -->
+    
+    <xsl:param name="indent-increment" select="'  '"/>
+
+    <xsl:template match="*" mode="pretty">
+        <xsl:param name="indent" select="'&#xA;'"/>
+
+        <xsl:value-of select="$indent"/>
+        <xsl:copy>
+            <xsl:copy-of select="@*" />
+            <xsl:apply-templates mode="pretty">
+                <xsl:with-param name="indent"
+                                select="concat($indent, $indent-increment)"/>
+            </xsl:apply-templates>
+            <xsl:if test="*">
+                <xsl:value-of select="$indent"/>
+            </xsl:if>
+        </xsl:copy>
+    </xsl:template>
+
+    <xsl:template match="comment()|processing-instruction()" mode="pretty">
+        <xsl:copy />
+    </xsl:template>
+
+    <!-- WARNING: this is dangerous. Handle with care -->
+    <xsl:template match="text()[normalize-space(.)='']" mode="pretty"/>
+    
 </xsl:stylesheet>

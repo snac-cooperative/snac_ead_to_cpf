@@ -260,7 +260,36 @@
 	    </xsl:otherwise>
 	</xsl:choose>
     </xsl:function>
-    
+
+    <!--
+        Perhaps specialized. Replace ' . ' with ' '
+        <relationEntry>Pierre-Jules Hetzel, . Papiers.. NAF 16932-17152., XIXe s.</relationEntry>
+    -->
+    <xsl:function name="snac:removeFloatingDot">
+	<xsl:param name="tempString" as="xs:string"/>
+	<xsl:value-of select="replace($tempString, '(\s+\.\s+)', ' ')"/>
+    </xsl:function>
+
+    <!--
+        Perhaps specialized. Replace ., with '. '
+        <relationEntry>Pierre-Jules Hetzel, . Papiers.. NAF 16932-17152., XIXe s.</relationEntry>
+    -->
+    <xsl:function name="snac:dotComma2Dot">
+	<xsl:param name="tempString" as="xs:string"/>
+	<xsl:value-of select="replace($tempString, '(\.,\s*)', '. ')"/>
+    </xsl:function>
+
+
+    <!--
+        Clean . with zero or more whitespace and as many of those as possible, replace with a single '. '
+        <relationEntry>Pierre-Jules Hetzel, . Papiers.. NAF 16932-17152., XIXe s.</relationEntry>
+    -->
+    <xsl:function name="snac:removeDoubleDot">
+	<xsl:param name="tempString" as="xs:string"/>
+	<xsl:value-of select="replace($tempString, '(\.\s*)+', '. ')"/>
+    </xsl:function>
+
+
     <!--
 	For cleaning up "Corporation, , 1901-2001" as well as "Corporation, ," and "Bowen,, Richard, "
     -->
@@ -351,10 +380,17 @@
         <!--
             Jan 5 2015 Switch this over to bfl/dfl, etc. as in other date code, and other character classes
             for flourished and circa.
+            
+            May 12 2015 This won't parse (nnnn-nnnn) apparently the parens cause problems. So we clean them up
+            here because cleaning in the calling code could break something. Cleaning is safer than trying to
+            upgrade the regex.
         -->
+        
+        <xsl:variable name="clean_string" select="replace($tempString, '\(|\)', '')"/>
+        
         <xsl:choose>
             <xsl:when
-                test="matches($tempString, '(^.+?\s)
+                test="matches($clean_string, '(^.+?\s)
                       (
                       (([fl\.]*\s*) ([ca\.]*\s*)[\d]{3,4}\??\- ([fl\.]*\s*) ([ca\.]*\s*) [\d]{3,4}\??)
                       |	
@@ -366,26 +402,26 @@
                       ,
                       'x')"> 
                 <xsl:choose>
-                    <xsl:when test="matches($tempString,
+                    <xsl:when test="matches($clean_string,
                                     '(^.+?\s) ((fl\.?\s*)? (ca?\.?\s*)?[\d]{3,4}\??\- (fl\.?\s*)? (ca?\.?\s*)? [\d]{3,4}\??)($|([\D].*$))', 'x')">
                         <xsl:value-of
-                            select="replace($tempString,
+                            select="replace($clean_string,
                                     '(^.+?\s) ((fl\.?\s*)? (ca?\.?\s*)?[\d]{3,4}\??\- (fl\.?\s*)? (ca?\.?\s*)? [\d]{3,4}\??)($|([\D].*$))'
                                     ,'$2', 'x')"/>
                     </xsl:when>
                     
-                    <xsl:when test="matches($tempString,
+                    <xsl:when test="matches($clean_string,
                                     '(^.+?\s) ((fl\.?\s*)? (ca?\.?\s*)? [\d]{3,4}\??\-)($|([\D].*$))', 'x')">
                         <xsl:value-of
-                            select="replace($tempString,
+                            select="replace($clean_string,
                                     '(^.+?\s) ((fl\.?\s*)? (ca?\.?\s*)? [\d]{3,4}\??\-)($|([\D].*$))'
                                     ,'$2', 'x')"/>
                     </xsl:when>
                     
-                    <xsl:when test="matches($tempString,
+                    <xsl:when test="matches($clean_string,
                                     '(^.+?\s) (([bdfl\.]*\s*) (ca?\.?\s*)?[\d]{3,4}\??) ($|([\D].*$))', 'x')">
                         <xsl:value-of
-                            select="replace($tempString,
+                            select="replace($clean_string,
                                     '(^.+?\s) (([bdfl\.]*\s*) (ca?\.?\s*)?[\d]{3,4}\??) ($|([\D].*$))', '$2', 'x')"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -394,11 +430,11 @@
                              if so, then one of the inner matches() must hit as well, thus this code never runs. If
                              you want to keep this, maybe a log message would be good.
                         -->
-                        <xsl:value-of select="$tempString"/>
+                        <xsl:value-of select="$clean_string"/>
                     </xsl:otherwise>
                     <!-- The original regex worked fine until a bug in Saxon stopped it from parsing. -->
                     <!-- <xsl:value-of -->
-                    <!--     select="replace($tempString,' -->
+                    <!--     select="replace($clean_string,' -->
                     <!-- 	    (^.+?\s) -->
                     <!-- 	    ( -->
                     <!-- 	    ((fl\.\s)? (ca\.\s)?[\d]{3,4}\??\- (fl\.\s)? (ca\.\s)? [\d]{3,4}\??) -->
@@ -420,7 +456,7 @@
                 <xsl:text>0</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:function>
+    </xsl:function> <!-- snac:getDateFromPersname -->
         
     <xsl:function name="snac:stripStringAfterDateInPersname">
         <xsl:param as="xs:string" name="tempString"/>

@@ -117,7 +117,7 @@ sub main
 
     if (-e $dest and -d $dest)
     {
-        print "Extract destination exists. Please delete or rename. Exiting.\n";
+        print "Error: extract destination exists: $dest\nPlease delete or rename. Exiting.\n";
         exit();
     }
 
